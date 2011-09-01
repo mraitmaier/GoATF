@@ -1,0 +1,14 @@
+
+# use glob syntax.
+syntax: glob
+*.8
+*.a
+*.json
+*.xml
+*.xsl
+*.xsd
+*~
+
+# switch to regexp syntax.
+# syntax: regexp
+# ^\.pc/
