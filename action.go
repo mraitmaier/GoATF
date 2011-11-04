@@ -38,7 +38,7 @@ func (a *Action) String() string {
 			s := fmt.Sprintf("%s %s\n", a.Script, a.Args)
 			return s
 		} else {
-			return fmt.Sprintf("Empty\n")
+			return fmt.Sprintf("\n")
 		} // if isexecutable
 	} // if ismanual
 	return fmt.Sprint(a.Script, " ", a.Args)
@@ -46,6 +46,12 @@ func (a *Action) String() string {
 
 func (a *Action) IsExecutable() bool { return a.Executable }
 func (a *Action) IsManual() bool     { return a.Manual }
+
+func (a *Action) Result() (tr TestResult) {
+    if a.Success { tr = Pass } else { tr = Fail }
+    return tr
+}
+
 func (a *Action) Xml() string {
 	xml := ""
 	if a.IsExecutable() {
@@ -85,13 +91,13 @@ func (a *Action) Json() (string, os.Error) {
  * if not, 'success' is always set.
  */
 func (a *Action) Execute() (output string) {
-	a.Success = true // we assume execution will be successful
+    a.Success = true // we assume execution will be successful
 	// We execute the action only if it's marked executable
 	if a.IsExecutable() {
 		out, err := Execute(a.Script, strings.Split(a.Args, " "))
 		// if error has accured, script has failed
 		if err != nil {
-			a.Success = false
+            a.Success = false
 		}
 		output += "###### OUTPUT ######\n"
 		output += fmt.Sprintf("%s", out)
@@ -110,7 +116,7 @@ func (a *Action) Execute() (output string) {
  * This is creation function for a executable action. The 'script' fields is
  * mandatory, the 'args' field can be empty string. Also, the 'executed' flag
  * must be set and the 'manual' flag reset. The 'success' flag is reset by
- * default. The 'description' field has no special meaning with executable
+ * default. The 'description' field has no special meaning with executable 
  * actions.
  */
 func CreateAction(script string, args string) *Action {
@@ -123,7 +129,7 @@ func CreateAction(script string, args string) *Action {
  * This is creation function for a manual action. The 'script' and 'args'
  * fields are left empty, only 'description' is needed.
  * The 'manual' flag is set and 'executable' flag is reset.
- * Since this action is not executable, 'success is always set.
+ * Since this action is not executable, 'success' is always set.
  */
 func CreateManualAction(descr string) *Action {
 	return &Action{"", "", true, "", descr, false, true}
