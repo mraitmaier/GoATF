@@ -15,11 +15,14 @@ import ("fmt"
 /*
  * Role - type (enum) defining user roles
  */
-type Role int 
+type Role int
 const (
     UnknownRole Role = iota
     GuestRole
     UserRole
+    TesterRole
+    DeveloperRole
+    ManagerRole
     AdminRole
 )
 
@@ -28,9 +31,12 @@ const (
  */
 func (r Role) String() string {
     switch r {
-        case AdminRole: return "Admin"
-        case UserRole : return "User"
-        case GuestRole: return "Guest"
+        case AdminRole     : return "Admin"
+        case UserRole      : return "User"
+        case TesterRole    : return "Tester"
+        case DeveloperRole : return "Developer"
+        case ManagerRole   : return "Manager"
+        case GuestRole     : return "Guest"
     }
     return "Unknown Role"
 }
@@ -41,8 +47,11 @@ func (r Role) String() string {
 func RoleValue(s string) Role {
     switch strings.ToLower(s) {
         case "admin", "administrator": return AdminRole
+        case "manager"               : return ManagerRole
+        case "developer"             : return DeveloperRole
+        case "tester"                : return TesterRole
         case "user"                  : return UserRole
-        case "guest"                 : return  GuestRole
+        case "guest"                 : return GuestRole
     }
     return UnknownRole
 }
@@ -87,5 +96,4 @@ func CreateUser(username, password string)  *User {
     p.Set(password)
     return &User{username, p, "", "", UnknownRole, ""}
 }
-
 
