@@ -22,7 +22,7 @@ const (
 type Runner struct {
     tr *atf.TestReport // TestSet that's be run
     input string       // input configuration file (currently only JSON)
-    workdir string
+    workdir string     // working directory
     logfile string
     syslog string
     report string
@@ -32,6 +32,10 @@ type Runner struct {
     logger *atf.Log   // a logger instance (
 }
 
+/*
+ * NewRunner - Create new Runner instance and return its pointer;set the max 
+ * number of loggers along the way...
+ */
 func NewRunner() *Runner {
     var r = new(Runner)
     r.logger = atf.NewLog(numOfLoggers)
@@ -68,6 +72,14 @@ func (r *Runner) display(complete bool) {
     }
 }
 
+/*
+ * Runner.setWorkDir - set the working directory
+ * Join both of the input parameters into proper system PATH.
+ * If both input parameters are empty strings, create the default value; this
+ * is OS dependant: on WinXY the default is bound to USERPROFILE environment
+ * variable, while on POSIX systems, the default is bound to HOME envronment
+ * variable.
+ */
 func (r *Runner) setWorkDir(basedir string, tsName string) {
     var w = "results"
     if basedir == "" {
@@ -82,6 +94,11 @@ func (r *Runner) setWorkDir(basedir string, tsName string) {
     r.workdir = filepath.ToSlash(basedir)
 }
 
+/*
+ * Runner.collect - collect the configuration that'll be executed
+ * Parse the configuration file and create/update the appropriate data 
+ * structures - first of all the TestSet.
+ */
 func (r *Runner) collect() os.Error {
     var ts *atf.TestSet = new(atf.TestSet)
     var err os.Error
@@ -106,6 +123,9 @@ const (
         defStreamLevel atf.LogLevel = atf.NoticeLogLevel
       )
 
+/*
+ * Runner.createLog -
+ */
 func (r *Runner) createLog() os.Error {
     logfile := ""
     // logfile input argument is NOT empty...
@@ -132,7 +152,10 @@ func (r *Runner) createLog() os.Error {
     return nil
 }
 
-func (r *Runner) createLoggers(fmt string, debug bool) os.Error {
+/*
+ * Runner.createLoggers -
+ */
+func (r *Runner) createLoggers(format string, debug bool) os.Error {
     // first, we define log levels (severity) 
     fLevel := defFileLevel   // this is level for file handler
     sLevel := defSyslogLevel // this is level for syslog & console handlers
@@ -141,22 +164,25 @@ func (r *Runner) createLoggers(fmt string, debug bool) os.Error {
         sLevel = atf.DebugLogLevel
     }
     // now create file logger
-    f, err := atf.NewFileHandler(r.logfile, fmt, fLevel)
+    f, err := atf.NewFileHandler(r.logfile, format, fLevel)
     if err != nil { return err }
     if f != nil { r.logger.Handlers = r.logger.AddHandler(f) }
     // and create console logger
-    l := atf.NewStreamHandler(fmt, sLevel)
+    l := atf.NewStreamHandler(format, sLevel)
     if l != nil { r.logger.Handlers = r.logger.AddHandler(l) }
     // and finally create syslog logger if needed
     if r.syslog != "" {
         var s *atf.SyslogHandler
-        s = atf.NewSyslogHandler(r.syslog, fmt, sLevel)
+        s = atf.NewSyslogHandler(r.syslog, format, sLevel)
         if s != nil { r.logger.Handlers = r.logger.AddHandler(s) }
     }
     return err
 }
 
-func (r *Runner) Init() os.Error {
+/*
+ * Runner.initalize - 
+ */
+func (r *Runner) initialize() os.Error {
     // let's collect the configuration
     err := r.collect()
     if err != nil { return err }
@@ -170,6 +196,9 @@ func (r *Runner) Init() os.Error {
     return err
 }
 
+/*
+ * Runner.fmtOutput -
+ */
 func (r *Runner) fmtOutput(o string) string {
     s := "Displaying output:\n################### OUTPUT ##################\n"
     s += o
@@ -178,7 +207,7 @@ func (r *Runner) fmtOutput(o string) string {
 }
 
 /*
- *
+ * Runner.runStep -
  */
 func (r *Runner) runStep(step *atf.TestStep) {
     output := ""
@@ -194,7 +223,7 @@ func (r *Runner) runStep(step *atf.TestStep) {
 }
 
 /*
- *
+ * Runner.runTestCase -
  */
 func (r *Runner) runTestcase(tc *atf.TestCase) {
     if tc == nil {
@@ -209,7 +238,7 @@ func (r *Runner) runTestcase(tc *atf.TestCase) {
 }
 
 /*
- *
+ * Runner.runConfig -
  */
 func (r *Runner) runConfig(cfg *atf.Configuration) {
     if cfg == nil {
@@ -226,7 +255,7 @@ func (r *Runner) runConfig(cfg *atf.Configuration) {
 }
 
 /*
- *
+ * Runner.runSetup -
  */
 func (r *Runner) runSetup(act *atf.Action) {
     var output string = ""
@@ -240,10 +269,10 @@ func (r *Runner) runSetup(act *atf.Action) {
 }
 
 /*
- *
+ * Runner.runCleanup -
  */
 func (r *Runner) runCleanup(act *atf.Action) {
-    var output string = ""
+    var output = ""
     // run test set cleanup action (if it exists)
     if act != nil {
         r.logger.Notice(">>>>>>>>> Starting cleanup action\n")
@@ -255,10 +284,12 @@ func (r *Runner) runCleanup(act *atf.Action) {
 }
 
 /*
- *
+ * Runner.Run -
  */
 func (r *Runner) Run() {
+    r.tr.Started = atf.Now()
     r.logger.Notice(fmt.Sprintf("# Starting Test set: %q\n", r.tr.TestSet.Name))
+    r.logger.Notice(fmt.Sprintf("     Started: %s\n", r.tr.Started))
     // run the test set setup action
     r.runSetup(r.tr.TestSet.Setup)
     // now execute the configurations
@@ -267,27 +298,37 @@ func (r *Runner) Run() {
     }
     // run test set cleanup action (if it exists)
     r.runCleanup(r.tr.TestSet.Cleanup)
+    r.tr.Finished = atf.Now()
     r.logger.Notice(fmt.Sprintf("# Test set: %q end.\n", r.tr.TestSet.Name))
+    r.logger.Notice(fmt.Sprintf("     Finished: %s\n", r.tr.Finished))
     // This is the end of execution
 }
 
 /*
- *
+ * Runner.createHtmlHeader -
  */
+const mandatory_css = "cfg/always.css"
 func (r *Runner) createHtmlHeader(name string) string {
     s := "<!DOCTYPE html>\n"
     s += "<html>\n<head>\n"
     s += fmt.Sprintf("<meta charset=%q>\n", "utf-8")
     s += fmt.Sprintf("<title>Report: %s</title>\n", name)
+    // include CSS file; default CSS is "cfg/report_def.css"
+    s += "<link rel=\"stylesheet\" type=\"text/css\" "
+    _, f1 := path.Split(mandatory_css)
+    s += fmt.Sprintf("href=%q>\n", f1)
+    s += "<link rel=\"stylesheet\" type=\"text/css\" "
+    _, f2 := path.Split(r.cssfile)
+    s += fmt.Sprintf("href=%q>\n", f2)
     s += "</head>\n"
     return s
 }
 
 /*
- *
+ * Runner.createXmlReport - 
  */
 func (r *Runner) createXmlReport(filename string) os.Error {
-    xml := fmt.Sprintf("<?xml version=%q encoding=%q?>", "1.0", "UTF-9")
+    xml := fmt.Sprintf("<?xml version=%q encoding=%q?>", "1.0", "UTF-8")
     xml += r.tr.Xml()
     fout, err := os.OpenFile(filename, os.O_CREATE | os.O_WRONLY, 0755)
     if err != nil { return err }
@@ -297,7 +338,7 @@ func (r *Runner) createXmlReport(filename string) os.Error {
 }
 
 /*
- *
+ * Runner.createHtmlReport -
  */
 func (r *Runner) createHtmlReport(filename string) os.Error {
     // HTML report is always created
@@ -305,18 +346,24 @@ func (r *Runner) createHtmlReport(filename string) os.Error {
     html += "<body>\n"
     h, err := r.tr.Html()
     if err != nil { return err }
-    html += "</body>\n</html>\n"
     html += h
+    html += "</body>\n</html>\n"
     // the file itself
-    fout, err := os.OpenFile(filename, os.O_CREATE | os.O_WRONLY, 0755)
+    fout, err := os.OpenFile(filename, os.O_CREATE | os.O_WRONLY, 0644)
     if err != nil { return err }
     defer fout.Close()
     fmt.Fprint(fout, html)
+    // copy the CSS files with HTML report
+    _, f1 := path.Split(mandatory_css)
+    _, f2 := path.Split(r.cssfile)
+    _, err = atf.CopyFile(path.Join(r.workdir, f1), mandatory_css)
+    _, err = atf.CopyFile(path.Join(r.workdir, f2), r.cssfile)
+    if err != nil { return err }
     return nil
 }
 
 /*
- *
+ * Runner.CreateReports
  */
 func (r *Runner) CreateReports() {
     // always create HTML report
@@ -350,7 +397,8 @@ func parseArgs(r *Runner) {
     flag.StringVar(&r.logfile, "l", "", "Logfile name")
     flag.StringVar(&r.syslog, "s", "", "Syslog server IP")
     flag.StringVar(&r.report, "r", "", "final report filename")
-    flag.StringVar(&r.cssfile, "c", "", "custom CSS file for HTML report")
+    flag.StringVar(&r.cssfile, "c", "cfg/report_def.css",
+            "custom CSS file for HTML report")
     flag.BoolVar(&r.xml, "X", false, "create XML report (beside HTML report)")
     flag.BoolVar(&r.debug, "d", false,
             "enable debug mode (for testing purposes)")
@@ -359,17 +407,23 @@ func parseArgs(r *Runner) {
 }
 
 /*
- *
+ * main -
  */
 func main() {
     //atf.RunBats() // for testing purposes : test/bats.go
     r := NewRunner()
     // parse CLI arguments
     parseArgs(r)
-    // initialize new Runner 
-    err := r.Init()
-    if err != nil { panic(err) }
-    r.display(false) // DEBUG
+    // initialize new Runner; if initializaton fails, exit gracefully 
+    err := r.initialize()
+    if err != nil {
+        fmt.Println(err)
+        fmt.Println("Please define the input configuration file")
+        fmt.Println("Use '-h' switch to display help")
+        fmt.Println("Exiting...")
+        os.Exit(1)
+    }
+    r.display(true) // DEBUG
     // now, run the damn thing....
     r.Run()
     //
