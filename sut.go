@@ -29,7 +29,7 @@ func (t SUTType) String() string {
         case UnknownSUTType: s = "Unknown System Under Test"
         case Hardware: s = "Hardware"
         case Software: s = "Software"
-        case Both: s = "Hardware & Software"
+        case Both: s = "Hardware And Software"
     }
     return s
 }
@@ -85,7 +85,7 @@ func (s *SysUnderTest) Xml() string {
     xml := fmt.Sprintf("<SystemUnderTest name=\"%s\">\n", s.Name)
     xml += fmt.Sprintf("    <Type>%s</Type>\n", s.Systype.String())
     xml += fmt.Sprintf("    <Version>%s</Version>\n", s.Version)
-    xml += fmt.Sprintf("    <IP>%s</IP\n", s.IPaddr)
+    xml += fmt.Sprintf("    <IP>%s</IP>\n", s.IPaddr)
     xml += fmt.Sprintf("    <Description>%s</Description>\n", s.Description)
     xml += "</SystemUnderTest>\n"
     return xml
