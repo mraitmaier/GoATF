@@ -315,7 +315,7 @@ func NewStreamHandler(fmt string, lvl LogLevel) *StreamHandler {
 
 /************************** SyslogHandler ***********************************/
 /*
- * SyslogHandler - creates new file handler
+ * SyslogHandler - 
  */
 type SyslogHandler struct {
     *logHandler
