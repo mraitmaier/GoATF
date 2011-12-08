@@ -6,7 +6,7 @@ import (
 	"strings"
 	"os"
 )
-/*
+/*****************************************************************************
  * actioner interface
  */
 type Actioner interface {
@@ -30,6 +30,9 @@ type Action struct {
 	Manual      bool   /* is this action manual */
 }
 
+/*****************************************************************************
+ * Action.String - a string represenation of the Action struct
+ */
 func (a *Action) String() string {
 	if a.IsManual() {
 		return fmt.Sprintf("Manual Action:\n%s", a.Description)
@@ -44,14 +47,28 @@ func (a *Action) String() string {
 	return fmt.Sprint(a.Script, " ", a.Args)
 }
 
+/*****************************************************************************
+ * Action.Xml - is this action an executable (script, program) action?
+ */
 func (a *Action) IsExecutable() bool { return a.Executable }
+
+/*****************************************************************************
+ * Action.Xml - is this action a manual action?
+ */
 func (a *Action) IsManual() bool     { return a.Manual }
 
+/*****************************************************************************
+ * Action.Result -  return a TestResult value for the Action (based on Success
+ *                  field of the Action struct).
+ */
 func (a *Action) Result() (tr TestResult) {
     if a.Success { tr = Pass } else { tr = Fail }
     return tr
 }
 
+/*****************************************************************************
+ * Action.Xml - return an XML representation of the Action struct 
+ */
 func (a *Action) Xml() string {
 	xml := ""
 	if a.IsExecutable() {
@@ -70,6 +87,9 @@ func (a *Action) Xml() string {
 	return xml
 }
 
+/*****************************************************************************
+ * Action.Json - return a JSON representation of the Action struct 
+ */
 func (a *Action) Json() (string, os.Error) {
 	b, err := json.Marshal(a) // marshal returns a []byte, not string!
 	if err != nil {
@@ -110,7 +130,7 @@ func (a *Action) Execute() (output string) {
 	return a.Output
 }
 
-/*
+/*****************************************************************************
  * CreateAction - create a normal scripted/automated action
  *
  * This is creation function for a executable action. The 'script' fields is
@@ -123,7 +143,7 @@ func CreateAction(script string, args string) *Action {
 	return &Action{script, args, false, "", "", true, false}
 }
 
-/*
+/*****************************************************************************
  * CreateManualAction - create a manual action
  *
  * This is creation function for a manual action. The 'script' and 'args'
@@ -135,7 +155,7 @@ func CreateManualAction(descr string) *Action {
 	return &Action{"", "", true, "", descr, false, true}
 }
 
-/*
+/*****************************************************************************
  * CreateAction - create a normal scripted/automated action
  *
  * This is creation function for empty (do-nothing) action. All fields are set
