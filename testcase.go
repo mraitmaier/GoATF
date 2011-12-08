@@ -70,7 +70,7 @@ func (tc *TestCase) Xml() string {
         s += "<Step />\n"
     }
     if tc.Cleanup != nil {
-        s += fmt.Sprintf("Cleanup>%s</Cleanup>\n", tc.Cleanup.Xml())
+        s += fmt.Sprintf("<Cleanup>%s</Cleanup>\n", tc.Cleanup.Xml())
     } else {
         s += "<Cleanup />\n"
     }
@@ -85,6 +85,14 @@ func (tc *TestCase) Json() (string, os.Error) {
     b, err := json.Marshal(tc)
     if err != nil { return "", err }
     return string(b[:]), err
+}
+
+/*
+ * Testcase.Html -
+ */
+func (tc *TestCase) Html() (string, os.Error) {
+    // TODO
+    return "", nil
 }
 
 /*

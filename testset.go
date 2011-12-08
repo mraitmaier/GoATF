@@ -51,9 +51,9 @@ func (ts *TestSet) String() string {
  * TestSet.Xml
  */
 func (ts *TestSet) Xml() string {
-    xml := fmt.Sprintf("<TestSet name=%q\n", ts.Name)
+    xml := fmt.Sprintf("<TestSet name=%q>\n", ts.Name)
     if ts.Setup != nil {
-        xml += ts.Setup.Xml()
+        xml += fmt.Sprintf("<Setup>\n%s</Setup>\n", ts.Setup.Xml())
     } else {
         xml += "<Setup />\n"
     }
@@ -66,7 +66,7 @@ func (ts *TestSet) Xml() string {
         xml += "<Configuration />\n"
     }
     if ts.Cleanup != nil {
-        xml += ts.Cleanup.Xml()
+        xml += fmt.Sprintf("<Cleanup>\n%s</Cleanup>\n", ts.Cleanup.Xml())
     } else {
         xml += "<Cleanup />\n"
     }
@@ -81,6 +81,14 @@ func (ts *TestSet) Json() (string, os.Error) {
     b, err := json.Marshal(ts)
     if err != nil {return "", err }
     return string(b[:]), err
+}
+
+/*
+ * TestSet.Html - HTML representation of the TestSet
+ */
+func (ts *TestSet) Html() (string, os.Error) {
+    // TODO
+    return "", nil
 }
 
 /*

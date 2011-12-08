@@ -41,6 +41,9 @@ func (cfg *Configuration) String() string {
     return s
 }
 
+/*
+ * Configuration.Xml - XML representation of the Configuration
+ */
 func (cfg *Configuration) Xml() string {
     xml := fmt.Sprintf("<Configuration name=%q>\n", cfg.Name )
     xml += fmt.Sprintf("<Description>%s</Description>\n", cfg.Description)
@@ -59,7 +62,7 @@ func (cfg *Configuration) Xml() string {
 }
 
 /*
- * Configuration.Json -
+ * Configuration.Json - JSON representation of the Configuration
  */
 func (cfg *Configuration) Json() (s string, err os.Error) {
     var b []byte
@@ -67,6 +70,14 @@ func (cfg *Configuration) Json() (s string, err os.Error) {
     s = ""
     if err == nil { s = string(b[:]) }
     return
+}
+
+/*
+ * Configuration.Html - HTML representation of the Configuration
+ */
+func (cfg *Configuration) Html() (string, os.Error) {
+    // TODO
+    return "", nil
 }
 
 /*

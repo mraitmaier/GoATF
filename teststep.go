@@ -16,9 +16,8 @@ import ("fmt"
  */
 type TestStep struct {
     Name string           /* name of the test step */
-    Expected TestResult   /* expected status of the test step */
-    Status TestResult     /* final status of the test step: for manual it is
-                             always PASS */
+    Expected TestResult   /* expected status of the step */
+    Status TestResult     /* status of the step */
     *Action               /* every test step needs an action: either manual or
                              executable */
 }
@@ -73,6 +72,15 @@ func (ts *TestStep) Json() (string, os.Error) {
     if err != nil { return  "", err }
     return string(b[:]), err
 }
+
+/*
+ * TestStep.Html
+ */
+func (ts *TestStep) Html() (string, os.Error) {
+    // TODO
+    return "", nil
+}
+
 /*
  * TestStep.Execute
  */
