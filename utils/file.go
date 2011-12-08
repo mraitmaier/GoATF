@@ -22,10 +22,9 @@ func LoadFile(path string) (text string, err os.Error) {
 	text = ""
 	// open the file as read-only
 	file, err := os.Open(path)
-	if err != nil {
-		return text, err
-	}
+	if err != nil { return }
 	defer file.Close() // always close the file
+
 	// read the file line by line
 	read := bufio.NewReader(file)
 	str, err := read.ReadString('\n')
@@ -34,7 +33,7 @@ func LoadFile(path string) (text string, err os.Error) {
 		str, err = read.ReadString('\n')
 		text += str
 	}
-	return text, err
+	return
 }
 
 /*
@@ -45,9 +44,7 @@ func LoadFile(path string) (text string, err os.Error) {
  */
 func ReadTextFile(filename string) (string, os.Error) {
 	data, err := ioutil.ReadFile(filename)
-	if err != nil {
-		return "", err
-	}
+	if err != nil { return "", err }
 	return string(data), err
 }
 
@@ -62,25 +59,37 @@ func ReadLines(filename string) (lines []string, err os.Error) {
 	data, err := ioutil.ReadFile(filename)
 	// if there's an error reading a file, we return a list with single empty
 	// string and error
-	if err != nil {
-		return []string{""}, err
-	}
+	if err != nil { return []string{""}, err }
 	// now we convert the text into an array of lines
 	lines = strings.Split(string(data), "\n")
 	return
 }
 
+/*
+ * WriteTextFile - write a text file with given path
+ *
+ */
+func WriteTextFile(path string, contents string) (err os.Error) {
+    f, err := os.Create(path)
+    if err != nil { return }
+    defer f.Close()
+
+    _, err = f.Write([]byte(contents))
+    if err != nil { return }
+    return
+}
+
+/*
+ * CopyFile - copy a file from source 'src' to destination (dst)
+ *
+ */
 func CopyFile(dst, src string) (int64, os.Error) {
     sf, err := os.Open(src)
-    if err != nil {
-        return 0, err
-    }
+    if err != nil { return 0, err }
     defer sf.Close()
 
     df, err := os.Create(dst)
-    if err != nil {
-        return 0, err
-    }
+    if err != nil { return 0, err }
     defer df.Close()
 
     return io.Copy(df, sf)
