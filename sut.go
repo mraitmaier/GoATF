@@ -37,7 +37,7 @@ func (t SUTType) String() string {
 /*
  * SUTType.Value - return SUTType value from given string value
  */
-func (t SUTType) Value(val string) SUTType {
+func SUTTypeValue(val string) (t SUTType) {
     switch strings.ToLower(val) {
         case "hardware", "hw": t = Hardware
         case "software", "sw": t = Software

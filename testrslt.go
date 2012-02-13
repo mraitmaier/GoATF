@@ -19,7 +19,7 @@ const (
     NotAvailable
 )
 
-func (tr TestResult) ResolveResult(status string) TestResult {
+func ResolveResult(status string) TestResult {
     val := UnknownResult
     switch (status) {
         case "unknown":

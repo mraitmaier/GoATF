@@ -19,7 +19,7 @@ type TestPlan struct {
     Description string
     Setup *Action
     Cleanup *Action
-    Configs []Configuration
+    Cases []TestCase
 }
 
 /*
@@ -40,14 +40,14 @@ func (tp *TestPlan) Xml() string {
     } else {
         xml += "<Setup />\n"
     }
-    if tp.Configs != nil {
+    if tp.Cases != nil {
 
-        for _, cfg := range(tp.Configs) {
-            xml += cfg.Xml()
+        for _, tc := range(tp.Cases) {
+            xml += tc.Xml()
         }
-        //xml += tp.Configs.Xml()
+        //xml += tp.Cases.Xml()
     } else {
-        xml += "<Configuration />\n"
+        xml += "<TestCase />\n"
     }
     if tp.Cleanup != nil {
         xml += tp.Cleanup.Xml()
@@ -75,58 +75,58 @@ func CreateTestPlan(name string,
                    descr string,
                    setup *Action,
                    cleanup *Action) *TestPlan {
-    cfgs := make([]Configuration, 0, defTpListCap)
-    return &TestPlan{name, descr, setup, cleanup, cfgs}
+    tcs := make([]TestCase, 0, defTpListCap)
+    return &TestPlan{name, descr, setup, cleanup, tcs}
 }
 
 /*
  * TestPlan.findEmpty - function that creates the TestPlan struct
  */
 func (tp *TestPlan) findEmpty() int {
-    for ix, cfg := range(tp.Configs) {
-        if &cfg != nil && cfg.Name == "" { return ix }
+    for ix, tc := range(tp.Cases) {
+        if &tc != nil && tc.Name == "" { return ix }
     }
     return -1
 }
 
 /*
- * TestPlan.AppendConfig - function that 
+ * TestPlan.AppendCase - function that 
  */
-func (tp *TestPlan) AppendConfig(cfg *Configuration) []Configuration {
-    if cfg.Name != "" {
-        l := len(tp.Configs)
-        c := cap(tp.Configs)
+func (tp *TestPlan) AppendCase(tc *TestCase) []TestCase {
+    if tc.Name != "" {
+        l := len(tp.Cases)
+        c := cap(tp.Cases)
         if l+1 > c {
-            newlst := make([]Configuration, 0, 2*c)
-            copy(newlst, tp.Configs)
-            tp.Configs = newlst
+            newlst := make([]TestCase, 0, 2*c)
+            copy(newlst, tp.Cases)
+            tp.Cases = newlst
         }
-        tp.Configs = tp.Configs[0:l+1]
+        tp.Cases = tp.Cases[0:l+1]
         ix := tp.findEmpty()
         if ix != -1 {
-            tp.Configs[ix] = *cfg
+            tp.Cases[ix] = *tc
         }
     }
-    return tp.Configs
+    return tp.Cases
 }
 
 /*
- * TestPlan.ExtendConfigList - function that 
+ * TestPlan.ExtendCaseList - function that extends tha list of test cases
  */
-func (tp *TestPlan) ExtendConfigList(cfgl []Configuration) []Configuration {
-    l := len(tp.Configs)
-    if l+len(cfgl) > cap(tp.Configs) {
-        newlst := make([]Configuration, 0, cap(tp.Configs)+len(cfgl))
-        copy(newlst, tp.Configs)
-        tp.Configs = newlst
+func (tp *TestPlan) ExtendCaseList(tcl []TestCase) []TestCase {
+    l := len(tp.Cases)
+    if l+len(tcl) > cap(tp.Cases) {
+        newlst := make([]TestCase, 0, cap(tp.Cases)+len(tcl))
+        copy(newlst, tp.Cases)
+        tp.Cases = newlst
     }
-    tp.Configs = tp.Configs[0:l+len(cfgl)]
+    tp.Cases = tp.Cases[0:l+len(tcl)]
     empty := tp.findEmpty()
     if empty != -1 {
-        for ix, cfg := range(cfgl) {
-            tp.Configs[empty+ix] = cfg
+        for ix, tc := range(tcl) {
+            tp.Cases[empty+ix] = tc
         }
     }
-    return tp.Configs
+    return tp.Cases
 }
 

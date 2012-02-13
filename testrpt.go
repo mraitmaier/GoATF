@@ -37,29 +37,35 @@ func (tr *TestReport) Xml() string {
     xml := fmt.Sprintf("<TestReport>\n")
     xml += fmt.Sprintf("  <Started>%s</Started>\n", tr.Started)
     xml += fmt.Sprintf("  <Finished>%s</Finished>\n", tr.Finished)
-    xml += fmt.Sprintf(tr.TestSet.Xml())
+    if tr.TestSet != nil { xml += fmt.Sprintf(tr.TestSet.Xml()) }
     xml += fmt.Sprintln("</TestReport>")
     return xml
 }
 
-/*
+/**************************************************************************
  * TestReport.Json - JSON representation of the TestReport
  */
 func (tr *TestReport) Json() (string, os.Error) {
-    b, err := json.Marshal(tr)
-    if err != nil { return "", err }
-    return string(b[:]), err
+    if tr.TestSet != nil {
+        b, err := json.Marshal(tr)
+        if err != nil { return "", err }
+        return string(b[:]), err
+    }
+    return "", nil
+
 }
 
-/*
+/*************************************************************************
  * TestReport.Html - HTML representation of the TestReport.
  * Uses HTML5 standard.
  */
 func (tr *TestReport) Html() (string, os.Error) {
     var html = ""
-    html += tr.addHeader2Html()
-    for _, cfg := range tr.TestSet.Configs {
-        html += tr.addConfig2Html(&cfg)
+    if tr.TestSet != nil {
+        html += tr.addHeader2Html()
+        for _, tc := range tr.TestSet.Cases {
+            html += tr.addTestCase2Html(&tc)
+        }
     }
     return html, nil
 }
@@ -78,12 +84,18 @@ func (tr *TestReport) addHeader2Html()  string {
     html += fmt.Sprintln("</table>")
     html += fmt.Sprintln("<p />")
     html += fmt.Sprintln("<table>")
-    html += fmt.Sprintf("<tr><td>Setup</td><td>%s</td>", tr.Setup.String())
-    html += fmt.Sprintf("<td class=%q>%s</td></tr>\n",
-            resolveHtmlClass(tr.TestSet.Setup), tr.Setup.Result())
-    html += fmt.Sprintf("<tr><td>Cleanup</td><td>%s</td>", tr.Cleanup.String())
-    html += fmt.Sprintf("<td class=%q>%s</td></tr>\n",
-            resolveHtmlClass(tr.TestSet.Cleanup), tr.Cleanup.Result())
+    if tr.TestSet.Setup != nil {
+        html += fmt.Sprintf("<tr><td>Setup</td><td>%s</td>", 
+            tr.TestSet.Setup.String())
+        html += fmt.Sprintf("<td class=%q>%s</td></tr>\n",
+            resolveHtmlClass(tr.TestSet.Setup), tr.TestSet.Setup.Result())
+    }
+    if tr.TestSet.Cleanup != nil {
+        html += fmt.Sprintf("<tr><td>Cleanup</td><td>%s</td>",
+            tr.TestSet.Cleanup.String())
+        html += fmt.Sprintf("<td class=%q>%s</td></tr>\n",
+            resolveHtmlClass(tr.TestSet.Cleanup), tr.TestSet.Cleanup.Result())
+    }
     html += fmt.Sprintln("</table>")
     html += fmt.Sprintln("</header>")
     return html
@@ -109,6 +121,7 @@ func (tr *TestReport) addSut2Html(sut *SysUnderTest)  string {
 /*
  * TestReport.addConfig2Html - add a configuration data to HTML report
  */
+ /*
 func (tr *TestReport) addConfig2Html(cfg *Configuration) string {
     html := fmt.Sprintln("<section>")
     html += fmt.Sprintf("<h2>Configuration: %s</h2>", cfg.Name)
@@ -131,7 +144,7 @@ func (tr *TestReport) addConfig2Html(cfg *Configuration) string {
     html += fmt.Sprintln("</section>")
     return html
 }
-
+*/
 /*
  * TestReport.addTestCase2Html - add a test case data to HTML report
  */

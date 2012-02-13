@@ -101,10 +101,8 @@ func (r *Runner) setWorkDir(basedir string, tsName string) {
  */
 func (r *Runner) collect() os.Error {
     var ts *atf.TestSet = new(atf.TestSet)
-    var err os.Error
     if r.input != "" {
-        ts, err = atf.CollectTestSet(r.input)
-        if err != nil { return err }
+        ts = atf.CollectTestSet(r.input)
     } else {
         return os.NewError("There's no configuration file defined")
     }
@@ -238,23 +236,6 @@ func (r *Runner) runTestcase(tc *atf.TestCase) {
 }
 
 /*
- * Runner.runConfig -
- */
-func (r *Runner) runConfig(cfg *atf.Configuration) {
-    if cfg == nil {
-        r.logger.Error("Empty configuration\n")
-        return
-    }
-    r.logger.Notice(fmt.Sprintf("### Starting configuration: %q\n", cfg.Name))
-    r.runSetup(cfg.Setup)
-    for _, tcase := range cfg.Cases {
-        r.runTestcase(&tcase)
-    }
-    r.runCleanup(cfg.Cleanup)
-    r.logger.Notice(fmt.Sprintf("### configuration: %q end.\n", cfg.Name))
-}
-
-/*
  * Runner.runSetup -
  */
 func (r *Runner) runSetup(act *atf.Action) {
@@ -263,8 +244,8 @@ func (r *Runner) runSetup(act *atf.Action) {
     if act != nil {
         r.logger.Notice(">>>>>>>>> Starting setup action\n")
         output = r.tr.TestSet.Setup.Execute()
-    }
     r.logger.Notice(fmt.Sprintf("Setup action status: %t\n",r.tr.Setup.Success))
+    }
     r.logger.Info(r.fmtOutput(output))
 }
 
@@ -277,9 +258,9 @@ func (r *Runner) runCleanup(act *atf.Action) {
     if act != nil {
         r.logger.Notice(">>>>>>>>> Starting cleanup action\n")
         output = r.tr.TestSet.Cleanup.Execute()
-    }
-    r.logger.Notice(fmt.Sprintf("Cleanup action status: %t\n",
+        r.logger.Notice(fmt.Sprintf("Cleanup action status: %t\n",
                 r.tr.Setup.Success))
+    }
     r.logger.Info(r.fmtOutput(output))
 }
 
@@ -288,16 +269,20 @@ func (r *Runner) runCleanup(act *atf.Action) {
  */
 func (r *Runner) Run() {
     r.tr.Started = atf.Now()
-    r.logger.Notice(fmt.Sprintf("# Starting Test set: %q\n", r.tr.TestSet.Name))
     r.logger.Notice(fmt.Sprintf("     Started: %s\n", r.tr.Started))
-    // run the test set setup action
-    r.runSetup(r.tr.TestSet.Setup)
-    // now execute the configurations
-    for _, cfg := range r.tr.TestSet.Configs {
-        r.runConfig(&cfg)
+    // run test set only if it's not empty...
+    if r.tr.TestSet != nil {
+        r.logger.Notice(fmt.Sprintf("# Starting Test set: %q\n",
+            r.tr.TestSet.Name))
+        // run the test set setup action
+        r.runSetup(r.tr.TestSet.Setup)
+        // now execute the configurations
+        for _, tc := range r.tr.TestSet.Cases {
+            r.runTestcase(&tc)
+        }
+        // run test set cleanup action (if it exists)
+        r.runCleanup(r.tr.TestSet.Cleanup)
     }
-    // run test set cleanup action (if it exists)
-    r.runCleanup(r.tr.TestSet.Cleanup)
     r.tr.Finished = atf.Now()
     r.logger.Notice(fmt.Sprintf("# Test set: %q end.\n", r.tr.TestSet.Name))
     r.logger.Notice(fmt.Sprintf("     Finished: %s\n", r.tr.Finished))
@@ -410,7 +395,7 @@ func parseArgs(r *Runner) {
  * main -
  */
 func main() {
-    //atf.RunBats() // for testing purposes : test/bats.go
+//    atf.RunBats() // for testing purposes : test/bats.go
     r := NewRunner()
     // parse CLI arguments
     parseArgs(r)

@@ -35,9 +35,8 @@ func testCollector() {
     fmt.Println(">>>>>>>> JSON >>>")
     var ts *TestSet
     var err os.Error
-    ts, err = CollectTestSet("cfg/go_example_pretty.json")
+    ts = CollectTestSet("cfg/example.json")
     if ts == nil { fmt.Println("Empty Test set!") }
-    if err != nil { panic(err) }
     fmt.Println(ts.String())
     fmt.Println(">>>>>>>> ReadLines() test >>>")
     lines, err := ReadLines(testfile)
@@ -219,57 +218,18 @@ func testStructure() {
     fmt.Println(">> SUTs...")
     sut1 := CreateSUT("SUT1", Hardware, "1.0.0", 
             "This is description.", "10.0.2.1")
-    sut2 := CreateSUT("SUT2", Software, "blah", 
-            "This is another description.", "")
-    sut3 := CreateSUT("SUT3", Both, "???", 
-            "This is yet another description.", "it depends")
-    fmt.Println(">> configurations...")
-    cfg1 := CreateConfiguration("cfg1", sut1, setup1, cleanup1, cfg_descr)
-    cfg1.AppendCase(tcase1)
-    fmt.Println(cfg1.String())
-    fmt.Println(cfg1.Xml())
-    fmt.Println(cfg1.Json())
-    cfg2 := CreateConfiguration("cfg2", sut2, setup2, cleanup2, cfg_descr)
-    cfg2.AppendCase(tcase2)
-    cfg2.AppendCase(tcase3)
-    fmt.Println(cfg2.String())
-    fmt.Println(cfg2.Xml())
-    fmt.Println(cfg2.Json())
-    cfg3 := CreateConfiguration("cfg3", sut3, setup1, empty_cleanup,
-            cfg_descr)
-    cfg3.AppendCase(tcase1)
-    cfg3.AppendCase(tcase2)
-    cfg3.AppendCase(tcase3)
-    cfg3.AppendCase(tcase4)
-    cfg3.AppendCase(tcase5)
-    fmt.Println(cfg3.String())
-    fmt.Println(cfg3.Xml())
-    fmt.Println(cfg3.Json())
-    cfg4 := CreateConfiguration("cfg4", sut1, empty_setup, cleanup1,
-            cfg_descr)
-    cfg4.AppendCase(tcase5)
-    fmt.Println(cfg4.String())
-    fmt.Println(cfg4.Xml())
-    fmt.Println(cfg4.Json())
-    cfg5 := CreateConfiguration("cfg5", sut3, empty_setup, empty_cleanup,
-            cfg_descr)
-    cfg5.AppendCase(tcase5)
-    cfg5.AppendCase(tcase4)
-    cfg5.AppendCase(tcase3)
-    cfg5.AppendCase(tcase2)
-    cfg5.AppendCase(tcase1)
-    fmt.Println(cfg5.String())
-    fmt.Println(cfg5.Json())
-    fmt.Println(cfg5.Xml())
+//    sut2 := CreateSUT("SUT2", Software, "blah", 
+//            "This is another description.", "")
+//    sut3 := CreateSUT("SUT3", Both, "???", 
+//            "This is yet another description.", "it depends")
     // TestSet
     fmt.Println(">> testset...")
-    //
-    ts := CreateTestSet("testset", set_descr, setup1, cleanup2)
-    ts.AppendConfig(cfg1)
-    ts.AppendConfig(cfg2)
-    ts.AppendConfig(cfg3)
-    ts.AppendConfig(cfg4)
-    ts.AppendConfig(cfg5)
+    ts := CreateTestSet("testset", set_descr, sut1, setup1, cleanup2)
+    ts.AppendCase(tcase1)
+    ts.AppendCase(tcase2)
+    ts.AppendCase(tcase3)
+    ts.AppendCase(tcase4)
+    ts.AppendCase(tcase5)
     fmt.Println(ts.String())
     fmt.Println(ts.Xml())
     json, _ := ts.Json()
