@@ -18,7 +18,6 @@ GOFILES=\
     sut.go\
     teststep.go\
     testcase.go\
-    config.go\
     testset.go\
     testplan.go\
     testrpt.go \
