@@ -11,10 +11,10 @@ package atf
 import (
 	"os"
 	"json"
-    "path"
-    "xml"
- //   "strings"
-  //  "fmt"
+	"path"
+	"xml"
+	//   "strings"
+	//  "fmt"
 )
 
 /* define white-space for local use */
@@ -24,114 +24,127 @@ import (
  * ConfigType - an enum containing configuration types
  */
 type ConfigType int
+
 const (
 	UnknownConfig ConfigType = iota
 	JsonConfig
 	TextConfig
-    XmlConfig  // currently unused
+	XmlConfig // currently unused
 )
 
 /****************************************************************************
  * Collector interface - defines the types that implement Collect() method
  */
 type Collector interface {
-    Collect() *TestSet
+	Collect() *TestSet
 }
 
 /****************************************************************************
  * JsonCollector - defines the JSON 
  */
 type JsonCollector struct {
-    Path string
+	Path string
 }
 
 func (c *JsonCollector) Collect() (ts *TestSet) {
-    ts = new(TestSet)
-    text, err := ReadTextFile(c.Path)
-    if err != nil && err != os.EOF { return }
-    err = json.Unmarshal([]uint8(text), ts)
-    if err != nil { panic (err) }
-    return
+	ts = new(TestSet)
+	text, err := ReadTextFile(c.Path)
+	if err != nil && err != os.EOF {
+		return
+	}
+	err = json.Unmarshal([]uint8(text), ts)
+	if err != nil {
+		panic(err)
+	}
+	return
 }
 
 /****************************************************************************
  * XmlCollector - defines the  
  */
 type XmlCollector struct {
-    Path string
+	Path string
 }
 
 func (c *XmlCollector) Collect() (ts *TestSet) {
-    ts = new(TestSet)
-    //
-    fin, err := os.Open(c.Path)
-    if err != nil { panic(err) }
-    defer fin.Close()
-    // let's parse the XML ; 
-    // FIXME: Unmarshal probably won't work, custom parser will have to be used
-    err = xml.Unmarshal(fin, ts)
-    if err != nil { panic(err)}
-    return
+	ts = new(TestSet)
+	//
+	fin, err := os.Open(c.Path)
+	if err != nil {
+		panic(err)
+	}
+	defer fin.Close()
+	// let's parse the XML ; 
+	// FIXME: Unmarshal probably won't work, custom parser will have to be used
+	err = xml.Unmarshal(fin, ts)
+	if err != nil {
+		panic(err)
+	}
+	return
 }
 
 /****************************************************************************
  * TextCollector - defines the 
  */
 type TextCollector struct {
-    Path string
+	Path string
 }
 
 func (c *TextCollector) Collect() (ts *TestSet) {
-    //ts = new(TestSet)
-    // FIXME: no implementation yet, returning empty pointer
-    return nil
+	//ts = new(TestSet)
+	// FIXME: no implementation yet, returning empty pointer
+	return nil
 }
 
 /*
  * getCfgType - a factory function that determines the type of the config file
  */
-func getCfgType(pth string) (cfgtype ConfigType){
-    cfgtype = UnknownConfig
-    ext := path.Ext(pth)
-    switch ext {
-        case ".json"        : cfgtype = JsonConfig
-        case ".txt", ".cfg" : cfgtype = TextConfig
-        case ".xml"         : cfgtype = XmlConfig
-    }
-    return
+func getCfgType(pth string) (cfgtype ConfigType) {
+	cfgtype = UnknownConfig
+	ext := path.Ext(pth)
+	switch ext {
+	case ".json":
+		cfgtype = JsonConfig
+	case ".txt", ".cfg":
+		cfgtype = TextConfig
+	case ".xml":
+		cfgtype = XmlConfig
+	}
+	return
 }
 
 /*****************************************************************************
  * CollectTestSet - function that creates the TestSet struct
  */
-func CollectTestSet (path string) (ts *TestSet) {
-    // let's create empty TestSet
-    ts = new(TestSet)
-    // we need one of the Collectors to get test set data
-    var c Collector
-    // determine the type of config file and unmarshal the data into TestSet 
-    switch getCfgType(path) {
-        case JsonConfig:
-            c = new(JsonCollector)
-            c.(*JsonCollector).Path = path
-        case TextConfig:
-            c = new(TextCollector)
-            c.(*TextCollector).Path = path
-        case XmlConfig:
-            c = new(XmlCollector)
-            c.(*XmlCollector).Path = path
-        case UnknownConfig: return nil
-    }
-    // now collect the test set structure
-    ts = c.Collect()
-    //if ts == nil { fmt.Println("TestSet is empty.") }
-    return
+func CollectTestSet(path string) (ts *TestSet) {
+	// let's create empty TestSet
+	ts = new(TestSet)
+	// we need one of the Collectors to get test set data
+	var c Collector
+	// determine the type of config file and unmarshal the data into TestSet 
+	switch getCfgType(path) {
+	case JsonConfig:
+		c = new(JsonCollector)
+		c.(*JsonCollector).Path = path
+	case TextConfig:
+		c = new(TextCollector)
+		c.(*TextCollector).Path = path
+	case XmlConfig:
+		c = new(XmlCollector)
+		c.(*XmlCollector).Path = path
+	case UnknownConfig:
+		return nil
+	}
+	// now collect the test set structure
+	ts = c.Collect()
+	//if ts == nil { fmt.Println("TestSet is empty.") }
+	return
 }
 
 /******************************************************************************
  * resolveEndElem - take necesary when action when XML end element occurs
  */
- /*
+/*
 func resolveEndElem(elem *xml.EndElement, ts *TestSet) interface{} {
     var current_obj interface{} = ts
     e := elem.Name.Local
@@ -147,7 +160,7 @@ func resolveEndElem(elem *xml.EndElement, ts *TestSet) interface{} {
 /******************************************************************************
  * resolveStartElem - take necesary when action when XML start element occurs
  */
- /*
+/*
 func resolveStartElem(elem *xml.StartElement, obj interface{}) (interface{}, string) {
     var current_obj interface{} = obj
     e := elem.Name.Local
@@ -206,7 +219,7 @@ func resolveStartElem(elem *xml.StartElement, obj interface{}) (interface{}, str
 /******************************************************************************
  * resolveData - take necesary when action when XML (char)data occurs
  */
- /*
+/*
 func resolveData(tag string, data *xml.CharData, obj interface{}) {
     switch tag {
     case "TestSet":
@@ -242,7 +255,7 @@ func resolveData(tag string, data *xml.CharData, obj interface{}) {
  *  Description XML tag is used as a child to more XML tags and this function
  *  handles the these events.
  */
- /*
+/*
 func handleDesc(obj interface{}, s string) (err os.Error) {
     switch t := obj.(type) {
         case *SysUnderTest:
@@ -260,7 +273,7 @@ func handleDesc(obj interface{}, s string) (err os.Error) {
 /******************************************************************************
  * collectXml - parses the XML file and creates the test set structure
  */
- /*
+/*
 func collectXml(path string) (ts *TestSet) {
     // open the XML file
     fin, err := os.Open(path)
@@ -296,4 +309,3 @@ func collectXml(path string) (ts *TestSet) {
 func collectText(text string) (ts *TestSet, err os.Error) {
 }
 */
-

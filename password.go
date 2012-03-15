@@ -7,10 +7,11 @@
 
 package atf
 
-import ("fmt"
-        "crypto/md5"
-        "rand"
-        )
+import (
+	"fmt"
+	"crypto/md5"
+	"rand"
+)
 
 /*
  * Password - a type defining a user password
@@ -23,7 +24,7 @@ import ("fmt"
  * on passwords are performed using hashed passwords.
  */
 type Password struct {
-    pwd []byte
+	pwd []byte
 }
 
 /*
@@ -37,20 +38,26 @@ func (p *Password) Set(passwd string) { p.pwd = p.hashPwd(passwd) }
  * Password.Get - return a stored hashed password
  */
 func (p *Password) Get() string {
-    return fmt.Sprintf("%x", (p.pwd))
+	return fmt.Sprintf("%x", (p.pwd))
 }
 
 /*
  * Password.Cmp - compare arbitrary password to the one stored 
  */
 func (p *Password) Cmp(passwd string) bool {
-    hashed := p.removeSalt(p.hashPwd(passwd))
-    stored := p.removeSalt(p.pwd)
-    // we compare two []byte: lengths must be the same and every value  of the
-    // buffer must the same
-    if len(hashed) != len(stored) { return false }
-    for cnt, val := range hashed { if val != stored[cnt] { return false } }
-    return true
+	hashed := p.removeSalt(p.hashPwd(passwd))
+	stored := p.removeSalt(p.pwd)
+	// we compare two []byte: lengths must be the same and every value  of the
+	// buffer must the same
+	if len(hashed) != len(stored) {
+		return false
+	}
+	for cnt, val := range hashed {
+		if val != stored[cnt] {
+			return false
+		}
+	}
+	return true
 }
 
 /*
@@ -63,10 +70,13 @@ func (p *Password) Cmp(passwd string) bool {
  * Password type and that's it.
  */
 const saltSize int = 8
+
 func (p *Password) addSalt() []byte {
-    var b [saltSize]byte
-    for cnt := 0; cnt < saltSize; cnt++ { b[cnt] = byte(rand.Intn(255)) }
-    return b[:]
+	var b [saltSize]byte
+	for cnt := 0; cnt < saltSize; cnt++ {
+		b[cnt] = byte(rand.Intn(255))
+	}
+	return b[:]
 }
 
 /*
@@ -77,7 +87,7 @@ func (p *Password) addSalt() []byte {
  * Password type and that's it.
  */
 func (p *Password) removeSalt(saltedPwd []byte) []byte {
-    return saltedPwd[saltSize:]
+	return saltedPwd[saltSize:]
 }
 
 /*
@@ -88,15 +98,15 @@ func (p *Password) removeSalt(saltedPwd []byte) []byte {
  * Password type and that's it.
  */
 const numOfHashIteration int = 1017
-func (p *Password) hashPwd(passwd string) []byte {
-    h := md5.New()
-    // we need to convert a string into slice of bytes
-    b := []byte(passwd)
-    // let's iterate the MD5 hash more than a 1000-times
-    for cnt := 0; cnt < numOfHashIteration; cnt++ {
-        h.Write(b)
-        b = h.Sum()
-    }
-    return append(p.addSalt(), b...)
-}
 
+func (p *Password) hashPwd(passwd string) []byte {
+	h := md5.New()
+	// we need to convert a string into slice of bytes
+	b := []byte(passwd)
+	// let's iterate the MD5 hash more than a 1000-times
+	for cnt := 0; cnt < numOfHashIteration; cnt++ {
+		h.Write(b)
+		b = h.Sum()
+	}
+	return append(p.addSalt(), b...)
+}

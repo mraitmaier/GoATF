@@ -55,15 +55,19 @@ func (a *Action) IsExecutable() bool { return a.Executable }
 /*****************************************************************************
  * Action.Xml - is this action a manual action?
  */
-func (a *Action) IsManual() bool     { return a.Manual }
+func (a *Action) IsManual() bool { return a.Manual }
 
 /*****************************************************************************
  * Action.Result -  return a TestResult value for the Action (based on Success
  *                  field of the Action struct).
  */
 func (a *Action) Result() (tr TestResult) {
-    if a.Success { tr = Pass } else { tr = Fail }
-    return tr
+	if a.Success {
+		tr = Pass
+	} else {
+		tr = Fail
+	}
+	return tr
 }
 
 /*****************************************************************************
@@ -111,13 +115,13 @@ func (a *Action) Json() (string, os.Error) {
  * if not, 'success' is always set.
  */
 func (a *Action) Execute() (output string) {
-    a.Success = true // we assume execution will be successful
+	a.Success = true // we assume execution will be successful
 	// We execute the action only if it's marked executable
 	if a.IsExecutable() {
 		out, err := Execute(a.Script, strings.Split(a.Args, " "))
 		// if error has accured, script has failed
 		if err != nil {
-            a.Success = false
+			a.Success = false
 		}
 		output += "###### OUTPUT ######\n"
 		output += fmt.Sprintf("%s", out)
