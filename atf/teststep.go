@@ -8,33 +8,42 @@
 package atf
 
 import (
+	"encoding/json"
 	"fmt"
-	"os"
-	"json"
 )
 
 /*
  * TestStep
  */
 type TestStep struct {
-	Name     string            `xml:"attr"` /* name of the test step */
-	Expected TestResult        `xml:"attr"` /* expected status of the step */
-	Status   TestResult        `xml:"attr"` /* status of the step */
-	*Action  `xml:"TestStep>"` /* every test step needs an action: 
-	   either manual or executable */
+
+	/* name of the test step; in XML, this is an attribute */
+	Name string `xml:"name,attr"`
+
+	/* expected status of the step; in XML, this is an attribute */
+	Expected TestResult `xml:"expected,attr"`
+
+	/* status of the step; in XML, this is an attribute */
+	Status TestResult `xml:"status,attr"`
+
+	/* every test step needs an action: either manual or executable */
+	Action *Action
 }
+
 /*
  * TestStep.String 
  */
 func (ts *TestStep) String() string {
-	s := fmt.Sprintf("\tTestStep: %q\n\texpected status: %s\n\tstatus: %s\n",
-		ts.Name, ts.Expected.String(), ts.Status.String())
+	var act string
+	// let's check the action first...
 	if ts.Action != nil {
-		s += fmt.Sprintf("\tAction: %s", ts.Action.String())
+		act = ts.Action.String()
 	} else {
-		s += "\tAction: none"
+		act = "none"
 	}
-	return s
+	return fmt.Sprintf(
+		"TestStep: %q expected status: %q status: %q action: %q\n",
+		ts.Name, ts.Expected, ts.Status, act)
 }
 
 /*
@@ -42,11 +51,11 @@ func (ts *TestStep) String() string {
  */
 func (ts *TestStep) Display() string {
 	txt := "TestStep\n\n"
-	txt += fmt.Sprintf("Name: %s\n", ts.Name)
-	txt += fmt.Sprintf("Expected status: %s\n", ts.Expected.String())
-	txt += fmt.Sprintf("Status: %s", ts.Status.String())
+	txt += fmt.Sprintf("Name: %q\n", ts.Name)
+	txt += fmt.Sprintf("Expected status: %q\n", ts.Expected)
+	txt += fmt.Sprintf("Status: %q", ts.Status)
 	if ts.Action != nil {
-		txt += fmt.Sprintf("Action: %s\n", ts.Action.String())
+		txt += fmt.Sprintf("Action: %q\n", ts.Action.String())
 	} else {
 		txt += "Action: N/A\n"
 	}
@@ -60,7 +69,7 @@ func (ts *TestStep) Xml() string {
 	s := "<TestStep />\n"
 	if ts.Action != nil {
 		s = fmt.Sprintf("<TestStep name=%q expected=%q status=%q>",
-			ts.Name, ts.Expected.String(), ts.Status.String())
+			ts.Name, ts.Expected, ts.Status)
 		s += fmt.Sprintf("%s</TestStep>\n", ts.Action.Xml())
 	}
 	return s
@@ -69,7 +78,7 @@ func (ts *TestStep) Xml() string {
 /*
  * TestStep.Json
  */
-func (ts *TestStep) Json() (string, os.Error) {
+func (ts *TestStep) Json() (string, error) {
 	b, err := json.Marshal(ts)
 	if err != nil {
 		return "", err
@@ -80,7 +89,7 @@ func (ts *TestStep) Json() (string, os.Error) {
 /*
  * TestStep.Html
  */
-func (ts *TestStep) Html() (string, os.Error) {
+func (ts *TestStep) Html() (string, error) {
 	// TODO
 	return "", nil
 }
@@ -88,41 +97,43 @@ func (ts *TestStep) Html() (string, os.Error) {
 /*
  * TestStep.Execute
  */
-func (ts *TestStep) Execute() (output string) {
-	//    var rc TestResult = Fail // return code of the executed script/executable
-	output = fmt.Sprintf(">>> Entering test step %q\n", ts.Name)
+func (ts *TestStep) Execute(display *ExecDisplayFnCback) {
+	// we turn the function ptr back to function 
+	_d := *display
+	// and start the execution
+	_d("notice", fmt.Sprintf(">>> Entering test step %q\n", ts.Name))
 	// we execute the action when it's not empty
 	if ts.Action != nil {
-		output += ts.Action.Execute()
+		_d("info", FmtOutput(ts.Action.Execute()))
 	} else {
-		output += fmt.Sprintln("Action is EMPTY?????")
+		_d("error", fmt.Sprintln("Action is EMPTY?????"))
 	}
 	// let's evaluate expectations and final status of the step
-	switch ts.Expected {
-	case Pass:
-		if ts.Action.Success {
-			ts.Status = Pass
+	switch ts.Expected.Get() {
+	case "Pass":
+		if ts.Action.Status.Get() == "Pass" {
+			ts.Status.Set("Pass")
 		} else {
-			ts.Status = Fail
+			ts.Status.Set("Fail")
 		}
-	case XFail:
-		if ts.Action.Success {
-			ts.Status = Fail
+	case "XFail":
+		if ts.Action.Status.Get() == "Pass" {
+			ts.Status.Set("Fail")
 		} else {
-			ts.Status = Pass
+			ts.Status.Set("Pass")
 		}
 	default:
-		ts.Status = NotTested
+        //only Pass & XFail are allowed as expected status 
+		ts.Status.Set("NotTested")
 	}
-	output += fmt.Sprintf("Test step evaluated to %q\n", ts.Status.String())
-	output += fmt.Sprintf("<<< Leaving test step %q\n", ts.Name)
-	return output
+	_d("info", fmt.Sprintf("Test step evaluated to %q\n", ts.Status))
+	_d("notice", fmt.Sprintf("<<< Leaving test step %q\n", ts.Name))
 }
 
 /*
  * CreateTestStep
  */
 func CreateTestStep(name string, descr string, expected TestResult,
-status TestResult, act *Action) *TestStep {
+	status TestResult, act *Action) *TestStep {
 	return &TestStep{name, expected, status, act}
 }

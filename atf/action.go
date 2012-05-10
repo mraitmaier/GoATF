@@ -1,11 +1,11 @@
 package atf
 
 import (
+	"encoding/json"
 	"fmt"
-	"json"
 	"strings"
-	"os"
 )
+
 /*****************************************************************************
  * actioner interface
  */
@@ -21,13 +21,27 @@ type Actioner interface {
  * the script. 
  */
 type Action struct {
-	Script      string /* script to be executed */
-	Args        string /* arguments to script (if needed) */
-	Success     bool   /* script execution success */
-	Output      string /* script execution output text */
-	Description string /* description text, used mainly for manual actions */
-	Executable  bool   /* is this action executable? */
-	Manual      bool   /* is this action manual */
+
+	/* script to be executed */
+	Script string
+
+	/* arguments to script (if needed) */
+	Args string
+
+	/* script execution success */
+	Status TestResult `xml:"status,attr"`
+
+	/* script execution output text */
+	Output string
+
+	/* description text, used mainly for manual actions */
+	Description string
+
+	/* is this action executable? */
+	executable bool `xml:"executable,attr"`
+
+	/* is this action manual? */
+	manual bool `xml:"manual,attr"`
 }
 
 /*****************************************************************************
@@ -40,35 +54,43 @@ func (a *Action) String() string {
 		if a.IsExecutable() {
 			s := fmt.Sprintf("%s %s\n", a.Script, a.Args)
 			return s
-		} else {
-			return fmt.Sprintf("\n")
 		} // if isexecutable
 	} // if ismanual
 	return fmt.Sprint(a.Script, " ", a.Args)
 }
 
 /*****************************************************************************
+ * Action.updateFlags - a private method that updates the two actions flags:
+ *                      'executable' and 'manual'
+ * This method is run every time the 'Execute()' method is invoked.
+ */
+func (a *Action) updateFlags() {
+	// initialy, action is neither executable not manual
+	a.executable = false
+	a.manual = false
+	// if the action script is defined, action is executable
+	// we like executable actions, so we gave them precedence
+	if a.Script != "" {
+		a.executable = true
+		a.manual = false
+	} else {
+		// otherwise, if only Description is defined, we have a manual action
+		if a.Description != "" {
+			a.executable = false
+			a.manual = true
+		}
+	}
+}
+
+/*****************************************************************************
  * Action.Xml - is this action an executable (script, program) action?
  */
-func (a *Action) IsExecutable() bool { return a.Executable }
+func (a *Action) IsExecutable() bool { return a.executable }
 
 /*****************************************************************************
  * Action.Xml - is this action a manual action?
  */
-func (a *Action) IsManual() bool { return a.Manual }
-
-/*****************************************************************************
- * Action.Result -  return a TestResult value for the Action (based on Success
- *                  field of the Action struct).
- */
-func (a *Action) Result() (tr TestResult) {
-	if a.Success {
-		tr = Pass
-	} else {
-		tr = Fail
-	}
-	return tr
-}
+func (a *Action) IsManual() bool { return a.manual }
 
 /*****************************************************************************
  * Action.Xml - return an XML representation of the Action struct 
@@ -94,7 +116,7 @@ func (a *Action) Xml() string {
 /*****************************************************************************
  * Action.Json - return a JSON representation of the Action struct 
  */
-func (a *Action) Json() (string, os.Error) {
+func (a *Action) Json() (string, error) {
 	b, err := json.Marshal(a) // marshal returns a []byte, not string!
 	if err != nil {
 		return "", err
@@ -115,18 +137,17 @@ func (a *Action) Json() (string, os.Error) {
  * if not, 'success' is always set.
  */
 func (a *Action) Execute() (output string) {
-	a.Success = true // we assume execution will be successful
+	a.updateFlags() // let's update the actions flags...
+	a.Status.Set("Pass") // we assume execution will be successful
+
 	// We execute the action only if it's marked executable
 	if a.IsExecutable() {
-		out, err := Execute(a.Script, strings.Split(a.Args, " "))
+		var err error
+		a.Output, err = Execute(a.Script, strings.Split(a.Args, " "))
 		// if error has accured, script has failed
 		if err != nil {
-			a.Success = false
+			a.Status.Set("Fail")
 		}
-		output += "###### OUTPUT ######\n"
-		output += fmt.Sprintf("%s", out)
-		output += "#### OUTPUT END ####\n"
-		a.Output = out
 	} else {
 		// otherwise we just put description into output, success is already set
 		a.Output = a.Description
@@ -144,7 +165,8 @@ func (a *Action) Execute() (output string) {
  * actions.
  */
 func CreateAction(script string, args string) *Action {
-	return &Action{script, args, false, "", "", true, false}
+    return &Action{script, args, TestResult{"UnknownResult"}, 
+        "", "", true, false}
 }
 
 /*****************************************************************************
@@ -156,7 +178,7 @@ func CreateAction(script string, args string) *Action {
  * Since this action is not executable, 'success' is always set.
  */
 func CreateManualAction(descr string) *Action {
-	return &Action{"", "", true, "", descr, false, true}
+	return &Action{"", "", TestResult{"Pass"}, "", descr, false, true}
 }
 
 /*****************************************************************************
@@ -167,5 +189,6 @@ func CreateManualAction(descr string) *Action {
  * flags are reset, 'success' flag is set.
  */
 func CreateEmptyAction() *Action {
-	return &Action{"No action", "", true, "", "No action", false, false}
+	return &Action{"No action", "", TestResult{"Pass"}, "", 
+        "No action", false, false}
 }

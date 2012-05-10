@@ -5,10 +5,9 @@
 package atf
 
 import (
+	"encoding/json"
 	"fmt"
-	"json"
 	"strings"
-	"os"
 )
 
 /*
@@ -73,7 +72,7 @@ type SysUnderTest struct {
  * SysUnderTest.CreateSUT - create an SUT structure
  */
 func CreateSUT(name string, systype SUTType, version string,
-descr string, ip string) *SysUnderTest {
+	descr string, ip string) *SysUnderTest {
 	return &SysUnderTest{name, systype, version, descr, ip}
 }
 
@@ -105,7 +104,7 @@ func (s *SysUnderTest) Xml() string {
 /*
  * SysUnderTest.Json - JSON representation of the SUT structure
  */
-func (s *SysUnderTest) Json() (string, os.Error) {
+func (s *SysUnderTest) Json() (string, error) {
 	b, err := json.Marshal(s)
 	if err != nil {
 		return "", err

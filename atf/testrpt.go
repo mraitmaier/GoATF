@@ -9,19 +9,18 @@
 package atf
 
 import (
+	"encoding/json"
+	"encoding/xml"
 	"fmt"
-	"json"
-	"os"
 )
 
 /*
  * TestReport - this is 
  */
 type TestReport struct {
-	*TestSet        // TestSet sctructure that will be executed
-	Started  string // execution start timestamp (as a string)
-	Finished string // execution finish timestamp (as a string)
-	Output   string // complete execution output text
+    TestSet *TestSet    // TestSet sctructure that will be executed
+	Started  string     // execution start timestamp (as a string)
+	Finished string     // execution finish timestamp (as a string)
 }
 
 /*
@@ -33,23 +32,31 @@ func (tr *TestReport) String() string {
 }
 
 /*
- * TestReport.Xml - function that 
+ * TestReport.Name - returns a name of the TestReport (which is actually the
+ *                   name of the TestSet). 
  */
-func (tr *TestReport) Xml() string {
-	xml := fmt.Sprintf("<TestReport>\n")
-	xml += fmt.Sprintf("  <Started>%s</Started>\n", tr.Started)
-	xml += fmt.Sprintf("  <Finished>%s</Finished>\n", tr.Finished)
-	if tr.TestSet != nil {
-		xml += fmt.Sprintf(tr.TestSet.Xml())
-	}
-	xml += fmt.Sprintln("</TestReport>")
-	return xml
+func (tr *TestReport) Name() string { return tr.TestSet.Name }
+
+/*
+ * TestReport.Xml - create XML representation of the TestReport 
+ */
+func (tr *TestReport) Xml() (x string, err error) {
+
+    x = ""
+    if tr.TestSet != nil {
+        b, err := xml.MarshalIndent(tr, "  ", "    ")
+        if err != nil {
+            return "", err
+        }
+        x = string(b[:])
+    }
+    return
 }
 
 /**************************************************************************
- * TestReport.Json - JSON representation of the TestReport
+ * TestReport.Json - create JSON representation of the TestReport
  */
-func (tr *TestReport) Json() (string, os.Error) {
+func (tr *TestReport) Json() (string, error) {
 	if tr.TestSet != nil {
 		b, err := json.Marshal(tr)
 		if err != nil {
@@ -58,14 +65,13 @@ func (tr *TestReport) Json() (string, os.Error) {
 		return string(b[:]), err
 	}
 	return "", nil
-
 }
 
 /*************************************************************************
  * TestReport.Html - HTML representation of the TestReport.
  * Uses HTML5 standard.
  */
-func (tr *TestReport) Html() (string, os.Error) {
+func (tr *TestReport) Html() (string, error) {
 	var html = ""
 	if tr.TestSet != nil {
 		html += tr.addHeader2Html()
@@ -89,18 +95,21 @@ func (tr *TestReport) addHeader2Html() string {
 	html += fmt.Sprintf("<td>%s</td></tr>\n", tr.Finished)
 	html += fmt.Sprintln("</table>")
 	html += fmt.Sprintln("<p />")
+    if tr.TestSet.SysUnderTest != nil {
+        html += fmt.Sprintln(tr.addSut2Html(tr.TestSet.SysUnderTest))
+    }
 	html += fmt.Sprintln("<table>")
 	if tr.TestSet.Setup != nil {
 		html += fmt.Sprintf("<tr><td>Setup</td><td>%s</td>",
 			tr.TestSet.Setup.String())
 		html += fmt.Sprintf("<td class=%q>%s</td></tr>\n",
-			resolveHtmlClass(tr.TestSet.Setup), tr.TestSet.Setup.Result())
+			resolveHtmlClass(tr.TestSet.Setup), tr.TestSet.Setup.Status)
 	}
 	if tr.TestSet.Cleanup != nil {
 		html += fmt.Sprintf("<tr><td>Cleanup</td><td>%s</td>",
 			tr.TestSet.Cleanup.String())
 		html += fmt.Sprintf("<td class=%q>%s</td></tr>\n",
-			resolveHtmlClass(tr.TestSet.Cleanup), tr.TestSet.Cleanup.Result())
+			resolveHtmlClass(tr.TestSet.Cleanup), tr.TestSet.Cleanup.Status)
 	}
 	html += fmt.Sprintln("</table>")
 	html += fmt.Sprintln("</header>")
@@ -125,33 +134,6 @@ func (tr *TestReport) addSut2Html(sut *SysUnderTest) string {
 }
 
 /*
- * TestReport.addConfig2Html - add a configuration data to HTML report
- */
-/*
-func (tr *TestReport) addConfig2Html(cfg *Configuration) string {
-    html := fmt.Sprintln("<section>")
-    html += fmt.Sprintf("<h2>Configuration: %s</h2>", cfg.Name)
-    html += fmt.Sprintln("<article>")
-    html += tr.addSut2Html(cfg.Sut)
-    html += fmt.Sprintln("</article>")
-    html += fmt.Sprintln("<article><table>")
-    html += fmt.Sprintf("<tr><td class=%q>Setup</td><td>%s</td>", 
-            "name", cfg.Setup.String())
-    html += fmt.Sprintf("<td class=%q>%s</td></tr>\n",
-            resolveHtmlClass(cfg.Setup), cfg.Setup.Result())
-    html += fmt.Sprintf("<tr><td class=%q>Cleanup</td><td>%s</td>", 
-            "name", cfg.Cleanup.String())
-    html += fmt.Sprintf("<td class=%q>%s</td></tr>\n",
-            resolveHtmlClass(cfg.Cleanup), cfg.Cleanup.Result())
-    html += fmt.Sprintln("</table></article>")
-    for _, tc := range cfg.Cases {
-        html += tr.addTestCase2Html(&tc)
-    }
-    html += fmt.Sprintln("</section>")
-    return html
-}
-*/
-/*
  * TestReport.addTestCase2Html - add a test case data to HTML report
  */
 func (tr *TestReport) addTestCase2Html(tc *TestCase) string {
@@ -164,14 +146,14 @@ func (tr *TestReport) addTestCase2Html(tc *TestCase) string {
 	html += fmt.Sprintf("<tr><td>Setup</td><td>%s</td><td>Pass</td>",
 		tc.Setup.String())
 	html += fmt.Sprintf("<td class=%q>%s</td></tr>\n",
-		resolveHtmlClass(tc.Setup), tc.Setup.Result())
+		resolveHtmlClass(tc.Setup), tc.Setup.Status)
 	for _, step := range tc.Steps {
 		html += tr.addStep2Html(&step)
 	}
 	html += fmt.Sprintf("<tr><td>Cleanup</td><td>%s</td><td>Pass</td>",
 		tc.Cleanup.String())
 	html += fmt.Sprintf("<td class=%q>%s</td></tr>\n",
-		resolveHtmlClass(tc.Cleanup), tc.Cleanup.Result())
+		resolveHtmlClass(tc.Cleanup), tc.Cleanup.Status)
 	html += fmt.Sprintln("</table><p />")
 	html += "</article>\n"
 	return html
@@ -184,7 +166,8 @@ func (tr *TestReport) addStep2Html(step *TestStep) string {
 	// let's see if step has passed and set the HTML class accordingly
 	class := resolveHtmlClass(step)
 	html := fmt.Sprintf("<tr><td>%s</td>", step.Name)
-	html += fmt.Sprintf("<td>%s</td><td>%s</td>", step.String(), step.Expected)
+	html += fmt.Sprintf("<td>%s</td><td>%s</td>",
+		step.Action.String(), step.Expected)
 	html += fmt.Sprintf("<td class=%q>%s</td></tr>\n", class, step.Status)
 	return html
 }
@@ -199,18 +182,18 @@ func resolveHtmlClass(structure interface{}) (cls string) {
 	cls = ""
 	switch t := structure.(type) {
 	case *Action:
-		if t.Success {
+		if t.Status.Get() == "Pass" {
 			cls = "passed"
 		} else {
 			cls = "failed"
 		}
 	case *TestStep:
-		switch t.Status {
-		case Pass:
+		switch t.Status.Get() {
+		case "Pass":
 			cls = "passed"
-		case Fail:
+		case "Fail":
 			cls = "failed"
-		case NotTested:
+		case "NotTested":
 			cls = "nottested"
 		}
 	}
@@ -221,5 +204,5 @@ func resolveHtmlClass(structure interface{}) (cls string) {
  * CreateTestReport - function that creates the TestSet struct
  */
 func CreateTestReport(ts *TestSet) *TestReport {
-	return &TestReport{ts, "", "", ""}
+	return &TestReport{ts, "", ""}
 }

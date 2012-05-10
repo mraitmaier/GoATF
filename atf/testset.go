@@ -8,9 +8,8 @@
 package atf
 
 import (
+	"encoding/json"
 	"fmt"
-	"json"
-	"os"
 )
 
 /*****************************************************************************
@@ -23,13 +22,27 @@ import (
  * Otherwise they're completely the same. 
  */
 type TestSet struct {
-	Name          string     `xml:"attr"` // name, of course
-	Description   string     // longer description
-	TestPlan      string     // test set is a subset of test plan; we remember it 
-	*SysUnderTest            // system under test description
-	Setup         *Action    // setup action
-	Cleanup       *Action    // cleanup action
-	Cases         []TestCase `xml:"TestCase>"` // a list of test cases
+
+	// a test set name, of course; in XML, this is an attribute
+	Name string `xml:"name,attr"`
+
+	// a arbitrary long text description of the test set
+	Description string
+
+	// test set is a subset of test plan; we remember its name 
+	TestPlan string
+
+	// a system under test description
+	*SysUnderTest
+
+	// a setup action
+	Setup *Action `xml:"Setup"`
+
+	// a cleanup action
+	Cleanup *Action `xml:"Cleanup"`
+
+	// a list of test cases; in XML, this is a list of <TestCase> tags
+	Cases []TestCase `xml:"TestCase"`
 }
 
 /*
@@ -85,7 +98,7 @@ func (ts *TestSet) Xml() string {
 /*
  * TestSet.Json
  */
-func (ts *TestSet) Json() (string, os.Error) {
+func (ts *TestSet) Json() (string, error) {
 	b, err := json.Marshal(ts)
 	if err != nil {
 		return "", err
@@ -96,7 +109,7 @@ func (ts *TestSet) Json() (string, os.Error) {
 /*
  * TestSet.Html - HTML representation of the TestSet
  */
-func (ts *TestSet) Html() (string, os.Error) {
+func (ts *TestSet) Html() (string, error) {
 	// TODO
 	return "", nil
 }
@@ -163,7 +176,7 @@ func (ts *TestSet) CleanupAfterTsetSetupFail() string {
 	// mark all tcs & cases as skipped
 	for _, tc := range ts.Cases {
 		for _, step := range tc.Steps {
-			step.Status = Skipped
+			step.Status.Set("NotTested")
 		}
 	}
 	o += fmt.Sprintln("<<< Leaving test set %q", ts.Name)
@@ -171,36 +184,39 @@ func (ts *TestSet) CleanupAfterTsetSetupFail() string {
 }
 
 /*
- * TestSet.Execute
+ * TestSet.Execute - executes the whole test set
  */
-func (ts *TestSet) Execute() (output string) {
-	output = fmt.Sprintf(">>> Entering Test Set %q\n", ts.Name)
+func (ts *TestSet) Execute(display *ExecDisplayFnCback) {
+    output := ""
+	// define function from function pointer
+	_d := *display
+	//
+	_d("notice", fmt.Sprintf(">>> Entering Test Set %q\n", ts.Name))
 	if ts.Setup != nil {
-		output += fmt.Sprintln("Executing setup script")
-		output += ts.Setup.Execute()
+        output = ts.Setup.Execute()
+		_d("notice", fmt.Sprintln("Executing setup script"))
+		_d("info", FmtOutput(output))
 		// if setup script has failed, there's no need to proceed...
-		if !ts.Setup.Success {
-			output += ts.CleanupAfterTsetSetupFail()
-			return output
+		if ts.Setup.Status.Get() == "Fail" {
+			_d("error", ts.CleanupAfterTsetSetupFail())
 		}
 	} else {
-		output += fmt.Sprintln("Setup action is not defined.")
+		_d("notice", fmt.Sprintln("Setup action is not defined."))
 	}
 	//
 	if ts.Cases != nil {
 		for _, tc := range ts.Cases {
-			output += tc.Execute()
+			tc.Execute(display)
 		}
 	}
 	//
 	if ts.Cleanup != nil {
-		output += fmt.Sprintln("Executing cleanup script")
-		output += ts.Cleanup.Execute()
+		_d("notice", fmt.Sprintln("Executing cleanup script"))
+		_d("info", FmtOutput(ts.Cleanup.Execute()))
 	} else {
-		output += fmt.Sprintln("Cleanup action is not defined:")
+		_d("notice", fmt.Sprintln("Cleanup action is not defined:"))
 	}
-	output += fmt.Sprintf("<<< Leaving test set %q\n", ts.Name)
-	return output
+	_d("notice", fmt.Sprintf("<<< Leaving test set %q\n", ts.Name))
 }
 
 /*
@@ -209,10 +225,10 @@ func (ts *TestSet) Execute() (output string) {
 const defCfgListCap = 10
 
 func CreateTestSet(name string,
-descr string,
-sut *SysUnderTest,
-setup *Action,
-cleanup *Action) *TestSet {
+	descr string,
+	sut *SysUnderTest,
+	setup *Action,
+	cleanup *Action) *TestSet {
 	tcs := make([]TestCase, 0, defCfgListCap)
 	return &TestSet{name, descr, "", sut, setup, cleanup, tcs}
 }

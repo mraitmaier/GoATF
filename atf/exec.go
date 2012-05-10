@@ -12,22 +12,30 @@
  *
  * History:
  * 0.1  Apr10   MR  The first working version with limited testing 
+ * 0.2  Mar12   MR  type ExecDisplayFnCback defined
  */
 package atf
 
 import (
-	"os"
-	"exec"
+	"os/exec"
 	//         "fmt"
 	"path"
 	"runtime"
 )
 
 /*
- * Executor interface
+ * ExecDisplayFnCback -  This type is an alias for a closure that is used as a
+ * parameter of Execute() method of the Executor interface (see below). It as
+ * a callback function that mimics fmt.Printxy() functions to comment how the 
+ * execution is proceeding; therefore more or less a log function.
+ */
+type ExecDisplayFnCback func(...string)
+
+/*
+ * Executor interface defining the Execute() method
  */
 type Executor interface {
-	Execute() string
+	Execute(ExecDisplayFnCback) string
 }
 
 const (
@@ -57,6 +65,17 @@ const (
 )
 
 /*
+ * FmtOutput - a public helper function that formats the output text of the
+ *             executed script/program
+ */
+func FmtOutput(o string) string {
+	s := "Displaying output:\n################### OUTPUT ##################\n"
+	s += o
+	s += "################ OUTPUT END #################\n"
+	return s
+}
+
+/*
  * _execute - private function that actually executes the given script/program
  * and returns the output and/or error code. If everything goes well, 'err' is
  * 'nil'.
@@ -71,10 +90,10 @@ const (
  *      output - is the text output from the executed script/program
  *         err - error code; if everything is OK, it should be nil
  */
-func _execute(exe string, args []string) (output string, err os.Error) {
+func _execute(exe string, args []string) (output string, err error) {
 	output = ""
 	if len(exe) < 1 {
-		err = os.EINVAL
+		err = ATFError_Invalid_Value
 	} else {
 		var cmd *exec.Cmd
 		// let's execute the script
@@ -101,7 +120,7 @@ func _execute(exe string, args []string) (output string, err os.Error) {
  *      out - is the text output from the executed script/program
  *      err - error code; if everything is OK, it should be nil
  */
-func executeJava(jar string, args []string) (out string, err os.Error) {
+func executeJava(jar string, args []string) (out string, err error) {
 	realargs := make([]string, len(args)+3)
 	realargs[0] = "-jar"
 	realargs[1] = jar
@@ -129,7 +148,7 @@ func executeJava(jar string, args []string) (out string, err os.Error) {
  *      out - is the text output from the executed script/program
  *      err - error code; if everything is OK, it should be nil
  */
-func executeScript(exe string, script string, args []string) (out string, err os.Error) {
+func executeScript(exe string, script string, args []string) (out string, err error) {
 	// we need to insert an empty string before our args for python script to
 	// run properly
 	realargs := make([]string, len(args)+2)
@@ -194,7 +213,7 @@ func determineType(scr string) ScriptType {
  *      output - is the text output from the executed script/program
  *         err - error code; if everything is OK, it should be nil
  */
-func Execute(script string, args []string) (output string, err os.Error) {
+func Execute(script string, args []string) (output string, err error) {
 	var scrtype ScriptType
 	scrtype = determineType(script)
 	switch scrtype {
@@ -222,7 +241,7 @@ func Execute(script string, args []string) (output string, err os.Error) {
 		output, err = executeScript(groovyExec, script, args)
 	default:
 		output = "XXX: Invalid output"
-		err = os.EINVAL
+		err = ATFError_Invalid_Value
 	}
 	return output, err
 }

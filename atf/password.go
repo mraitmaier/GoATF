@@ -8,9 +8,9 @@
 package atf
 
 import (
-	"fmt"
 	"crypto/md5"
-	"rand"
+	"fmt"
+	"math/rand"
 )
 
 /*
@@ -106,7 +106,7 @@ func (p *Password) hashPwd(passwd string) []byte {
 	// let's iterate the MD5 hash more than a 1000-times
 	for cnt := 0; cnt < numOfHashIteration; cnt++ {
 		h.Write(b)
-		b = h.Sum()
+		b = h.Sum(nil)
 	}
 	return append(p.addSalt(), b...)
 }

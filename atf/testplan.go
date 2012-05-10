@@ -8,9 +8,8 @@
 package atf
 
 import (
+	"encoding/json"
 	"fmt"
-	"os"
-	"json"
 )
 
 /*
@@ -63,7 +62,7 @@ func (tp *TestPlan) Xml() string {
 /*
  * TestPlan.Json - function that 
  */
-func (tp *TestPlan) Json() (string, os.Error) {
+func (tp *TestPlan) Json() (string, error) {
 	b, err := json.Marshal(tp)
 	if err != nil {
 		return "", err
@@ -77,9 +76,9 @@ func (tp *TestPlan) Json() (string, os.Error) {
 const defTpListCap = 10
 
 func CreateTestPlan(name string,
-descr string,
-setup *Action,
-cleanup *Action) *TestPlan {
+	descr string,
+	setup *Action,
+	cleanup *Action) *TestPlan {
 	tcs := make([]TestCase, 0, defTpListCap)
 	return &TestPlan{name, descr, setup, cleanup, tcs}
 }

@@ -8,14 +8,14 @@
 package atf
 
 import (
-	"os"
 	"path"
 	"path/filepath"
 	//    "fmt"
+	"bitbucket.org/miranr/goatf/atf/utils"
 )
 
 type Reporter interface {
-	Create(tr *TestReport) (string, os.Error)
+	Create(tr *TestReport) (string, error)
 }
 
 /*
@@ -59,18 +59,18 @@ func (r *Report) AddText() { r.reports["txt"] = "" }
 /****************************************************************************
  * Report.create - private method that creates the report with given type 
  */
-func (r *Report) create(tr *TestReport, typ string) (rpt string, err os.Error) {
+func (r *Report) create(tr *TestReport, typ string) (rpt string, err error) {
 	switch typ {
 	case "html":
 		rpt, err = tr.Html()
 	case "xml":
-		rpt = tr.Xml()
+		rpt, err = tr.Xml()
 	case "txt": // TODO: TextReport not implemented yet
 	case "json":
 		rpt, err = tr.Json()
 	default:
 		rpt = "Unknown report type"
-		err = os.EINVAL
+		err = ATFError_Unknown_Report_Type
 	}
 	return
 }
@@ -78,7 +78,7 @@ func (r *Report) create(tr *TestReport, typ string) (rpt string, err os.Error) {
 /****************************************************************************
  * Report.Create - create all the defined reports and write them
  */
-func (r *Report) Create(tr *TestReport, pth string) (err os.Error) {
+func (r *Report) Create(tr *TestReport, pth string) (err error) {
 	// if path is empty, create the default path
 	if pth == "" {
 		pth = "."
@@ -91,7 +91,7 @@ func (r *Report) Create(tr *TestReport, pth string) (err os.Error) {
 			return err
 		}
 		filename := filepath.ToSlash(path.Join(pth, "report."+i))
-		err = WriteTextFile(filename, contents)
+		err = utils.WriteTextFile(filename, contents)
 		if err != nil {
 			return err
 		}

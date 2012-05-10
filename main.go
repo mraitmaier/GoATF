@@ -4,18 +4,21 @@
 package main
 
 import (
-	"fmt"
+	"errors"
 	"flag"
+	"fmt"
 	"os"
 	"path"
 	"path/filepath"
 	"runtime"
-	"atf"
+	"bitbucket.org/miranr/goatf/atf"
+	"bitbucket.org/miranr/goatf/atf/utils"
 )
 
 const (
 	numOfLoggers int = 3
 )
+
 /*
  * Runner
  */
@@ -27,9 +30,9 @@ type Runner struct {
 	syslog  string
 	report  string
 	cssfile string
-	xml     bool     // create XML report (beside HTML report)
-	debug   bool     // enable debug mode (for testing purposes only)
-	logger  *atf.Log // a logger instance (
+	xml     bool       // create XML report (beside HTML report)
+	debug   bool       // enable debug mode (for testing purposes only)
+	logger  *utils.Log // a logger instance (
 }
 
 /*
@@ -38,7 +41,7 @@ type Runner struct {
  */
 func NewRunner() *Runner {
 	var r = new(Runner)
-	r.logger = atf.NewLog(numOfLoggers)
+	r.logger = utils.NewLog(numOfLoggers)
 	return r
 }
 
@@ -63,9 +66,9 @@ func (r *Runner) display(complete bool) {
 	// display test set
 	if r.tr != nil {
 		if complete {
-			fmt.Println(r.tr.String())
+			fmt.Printf("%s", r.tr.String())
 		} else {
-			fmt.Printf("TestSet: %q\n", r.tr.Name)
+			fmt.Printf("TestSet: %q\n", r.tr.Name())
 		}
 	} else {
 		fmt.Println("TestSet not defined yet.")
@@ -89,7 +92,7 @@ func (r *Runner) setWorkDir(basedir string, tsName string) {
 			basedir = os.Getenv("HOME")
 		}
 		basedir = path.Join(basedir, w,
-			fmt.Sprintf("%s_%s", tsName, atf.NowFile()))
+			fmt.Sprintf("%s_%s", tsName, utils.NowFile()))
 	}
 	r.workdir = filepath.ToSlash(basedir)
 }
@@ -99,15 +102,15 @@ func (r *Runner) setWorkDir(basedir string, tsName string) {
  * Parse the configuration file and create/update the appropriate data 
  * structures - first of all the TestSet.
  */
-func (r *Runner) collect() os.Error {
+func (r *Runner) collect() error {
 	var ts *atf.TestSet = new(atf.TestSet)
 	if r.input != "" {
 		ts = atf.CollectTestSet(r.input)
 	} else {
-		return os.NewError("There's no configuration file defined")
+		return errors.New("There's no configuration file defined")
 	}
 	if ts == nil {
-		return os.NewError("Test set is empty")
+		return errors.New("Test set is empty")
 	}
 	r.tr = atf.CreateTestReport(ts)
 	return nil
@@ -118,15 +121,15 @@ func (r *Runner) collect() os.Error {
 // important printous, while syslog handler should omit sending the execution
 // outputs. 
 const (
-	defSyslogLevel atf.LogLevel = atf.NoticeLogLevel
-	defFileLevel   atf.LogLevel = atf.InfoLogLevel
-	defStreamLevel atf.LogLevel = atf.NoticeLogLevel
+	defSyslogLevel utils.LogLevel = utils.NoticeLogLevel
+	defFileLevel   utils.LogLevel = utils.InfoLogLevel
+	defStreamLevel utils.LogLevel = utils.NoticeLogLevel
 )
 
 /*
  * Runner.createLog -
  */
-func (r *Runner) createLog() os.Error {
+func (r *Runner) createLog() error {
 	logfile := ""
 	// logfile input argument is NOT empty...
 	if r.logfile != "" {
@@ -157,16 +160,16 @@ func (r *Runner) createLog() os.Error {
 /*
  * Runner.createLoggers -
  */
-func (r *Runner) createLoggers(format string, debug bool) os.Error {
+func (r *Runner) createLoggers(format string, debug bool) error {
 	// first, we define log levels (severity) 
 	fLevel := defFileLevel   // this is level for file handler
 	sLevel := defSyslogLevel // this is level for syslog & console handlers
 	if debug {
-		fLevel = atf.DebugLogLevel
-		sLevel = atf.DebugLogLevel
+		fLevel = utils.DebugLogLevel
+		sLevel = utils.DebugLogLevel
 	}
 	// now create file logger
-	f, err := atf.NewFileHandler(r.logfile, format, fLevel)
+	f, err := utils.NewFileHandler(r.logfile, format, fLevel)
 	if err != nil {
 		return err
 	}
@@ -174,14 +177,14 @@ func (r *Runner) createLoggers(format string, debug bool) os.Error {
 		r.logger.Handlers = r.logger.AddHandler(f)
 	}
 	// and create console logger
-	l := atf.NewStreamHandler(format, sLevel)
+	l := utils.NewStreamHandler(format, sLevel)
 	if l != nil {
 		r.logger.Handlers = r.logger.AddHandler(l)
 	}
 	// and finally create syslog logger if needed
 	if r.syslog != "" {
-		var s *atf.SyslogHandler
-		s = atf.NewSyslogHandler(r.syslog, format, sLevel)
+		var s *utils.SyslogHandler
+		s = utils.NewSyslogHandler(r.syslog, format, sLevel)
 		if s != nil {
 			r.logger.Handlers = r.logger.AddHandler(s)
 		}
@@ -192,7 +195,7 @@ func (r *Runner) createLoggers(format string, debug bool) os.Error {
 /*
  * Runner.initalize - 
  */
-func (r *Runner) initialize() os.Error {
+func (r *Runner) initialize() error {
 	// let's collect the configuration
 	err := r.collect()
 	if err != nil {
@@ -211,97 +214,31 @@ func (r *Runner) initialize() os.Error {
 }
 
 /*
- * Runner.fmtOutput -
- */
-func (r *Runner) fmtOutput(o string) string {
-	s := "Displaying output:\n################### OUTPUT ##################\n"
-	s += o
-	s += "################ OUTPUT END #################\n"
-	return s
-}
-
-/*
- * Runner.runStep -
- */
-func (r *Runner) runStep(step *atf.TestStep) {
-	output := ""
-	if step == nil {
-		r.logger.Error("Empty test step.\n")
-		return
-	}
-	r.logger.Notice(">>>>>>>>> Starting action\n")
-	output = step.Execute()
-	r.logger.Notice(fmt.Sprintf("Action status: %t\n", step.Success))
-	r.logger.Info(r.fmtOutput(output))
-	r.logger.Notice(">>>>>>>>> Action end.\n")
-}
-
-/*
- * Runner.runTestCase -
- */
-func (r *Runner) runTestcase(tc *atf.TestCase) {
-	if tc == nil {
-		r.logger.Error("Empty test case\n")
-		return
-	}
-	r.logger.Notice(fmt.Sprintf("### Starting test case: %q\n", tc.Name))
-	r.runSetup(tc.Setup)
-	for _, step := range tc.Steps {
-		r.runStep(&step)
-	}
-	r.runCleanup(tc.Cleanup)
-	r.logger.Notice(fmt.Sprintf("### Test case: %q end.\n", tc.Name))
-}
-
-/*
- * Runner.runSetup -
- */
-func (r *Runner) runSetup(act *atf.Action) {
-	var output string = ""
-	// run test set setup action (if it exists)
-	if act != nil {
-		r.logger.Notice(">>>>>>>>> Starting setup action\n")
-		output = r.tr.TestSet.Setup.Execute()
-		r.logger.Notice(fmt.Sprintf("Setup action status: %t\n", r.tr.Setup.Success))
-	}
-	r.logger.Info(r.fmtOutput(output))
-}
-
-/*
- * Runner.runCleanup -
- */
-func (r *Runner) runCleanup(act *atf.Action) {
-	var output = ""
-	// run test set cleanup action (if it exists)
-	if act != nil {
-		r.logger.Notice(">>>>>>>>> Starting cleanup action\n")
-		output = r.tr.TestSet.Cleanup.Execute()
-		r.logger.Notice(fmt.Sprintf("Cleanup action status: %t\n",
-			r.tr.Setup.Success))
-	}
-	r.logger.Info(r.fmtOutput(output))
-}
-
-/*
  * Runner.Run -
  */
 func (r *Runner) Run() {
-	r.tr.Started = atf.Now()
+	// define a logging closure to be passed around...
+	fn := atf.ExecDisplayFnCback(func(params ...string) {
+        // we check that at least two string args are present; if more, we
+        // ignore them
+		if len(params) < 2 {
+			panic("Callback: Wrong number of parameters.")
+		}
+        // now log the message
+		lvl := params[0] // the first arg is logging level
+		msg := params[1] // the second arg is logging message
+		r.logger.LogS(lvl, msg)
+	})
+	// execution begins...
+	r.tr.Started = utils.Now()
 	r.logger.Notice(fmt.Sprintf("     Started: %s\n", r.tr.Started))
 	// run test set only if it's not empty...
 	if r.tr.TestSet != nil {
 		r.logger.Notice(fmt.Sprintf("# Starting Test set: %q\n",
-			r.tr.TestSet.Name))
-		// run the test set setup action
-		r.runSetup(r.tr.TestSet.Setup)
-		// now execute the configurations
-		for _, tc := range r.tr.TestSet.Cases {
-			r.runTestcase(&tc)
-		}
-		// run test set cleanup action (if it exists)
-		r.runCleanup(r.tr.TestSet.Cleanup)
+						r.tr.TestSet.Name))
+		r.tr.TestSet.Execute(&fn) // we pass a ptr to defined closure
 	}
-	r.tr.Finished = atf.Now()
+	r.tr.Finished = utils.Now()
 	r.logger.Notice(fmt.Sprintf("# Test set: %q end.\n", r.tr.TestSet.Name))
 	r.logger.Notice(fmt.Sprintf("     Finished: %s\n", r.tr.Finished))
 	// This is the end of execution
@@ -329,24 +266,30 @@ func (r *Runner) createHtmlHeader(name string) string {
 }
 
 /*
- * Runner.createXmlReport - 
+ * Runner.createXmlReport - create a XML version of the  test report 
  */
-func (r *Runner) createXmlReport(filename string) os.Error {
-	xml := fmt.Sprintf("<?xml version=%q encoding=%q?>", "1.0", "UTF-8")
-	xml += r.tr.Xml()
+func (r *Runner) createXmlReport(filename string) error {
+	x := fmt.Sprintf("<?xml version=%q encoding=%q?>", "1.0", "UTF-8")
+    // create XML representation
+    trXml, err := r.tr.Xml()
+    if err != nil {
+        return err
+    }
+	x += trXml
+    // write XML file
 	fout, err := os.OpenFile(filename, os.O_CREATE|os.O_WRONLY, 0755)
 	if err != nil {
 		return err
 	}
 	defer fout.Close()
-	fmt.Fprint(fout, xml)
+	fmt.Fprint(fout, x)
 	return nil
 }
 
 /*
  * Runner.createHtmlReport -
  */
-func (r *Runner) createHtmlReport(filename string) os.Error {
+func (r *Runner) createHtmlReport(filename string) error {
 	// HTML report is always created
 	html := r.createHtmlHeader(r.tr.TestSet.Name)
 	html += "<body>\n"
@@ -366,8 +309,8 @@ func (r *Runner) createHtmlReport(filename string) os.Error {
 	// copy the CSS files with HTML report
 	_, f1 := path.Split(mandatory_css)
 	_, f2 := path.Split(r.cssfile)
-	_, err = atf.CopyFile(path.Join(r.workdir, f1), mandatory_css)
-	_, err = atf.CopyFile(path.Join(r.workdir, f2), r.cssfile)
+	_, err = utils.CopyFile(path.Join(r.workdir, f1), mandatory_css)
+	_, err = utils.CopyFile(path.Join(r.workdir, f2), r.cssfile)
 	if err != nil {
 		return err
 	}

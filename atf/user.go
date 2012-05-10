@@ -8,10 +8,9 @@
 package atf
 
 import (
+	"encoding/json"
 	"fmt"
-	"os"
 	"strings"
-	"json"
 )
 
 /*
@@ -95,7 +94,7 @@ func (u *User) String() (s string) {
 /*
  * User.Json - convert a user into JSON representation
  */
-func (u *User) Json() (string, os.Error) {
+func (u *User) Json() (string, error) {
 	b, err := json.Marshal(u)
 	if err != nil {
 		return "", err
