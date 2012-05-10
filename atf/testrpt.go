@@ -1,0 +1,225 @@
+/*
+ * testrpt.go 
+ *
+ * History:
+ *  0.1   jun11 MR Initial version, limited testing
+ *  0.2   oct11 MR HTML report generation added
+ */
+
+package atf
+
+import (
+	"fmt"
+	"json"
+	"os"
+)
+
+/*
+ * TestReport - this is 
+ */
+type TestReport struct {
+	*TestSet        // TestSet sctructure that will be executed
+	Started  string // execution start timestamp (as a string)
+	Finished string // execution finish timestamp (as a string)
+	Output   string // complete execution output text
+}
+
+/*
+ * TestReport.String - string representation of the TestReport
+ */
+func (tr *TestReport) String() string {
+	return fmt.Sprintf("TestReport %q\n\tstarted: %s\n\tfinished: %s\n",
+		tr.TestSet.String(), tr.Started, tr.Finished)
+}
+
+/*
+ * TestReport.Xml - function that 
+ */
+func (tr *TestReport) Xml() string {
+	xml := fmt.Sprintf("<TestReport>\n")
+	xml += fmt.Sprintf("  <Started>%s</Started>\n", tr.Started)
+	xml += fmt.Sprintf("  <Finished>%s</Finished>\n", tr.Finished)
+	if tr.TestSet != nil {
+		xml += fmt.Sprintf(tr.TestSet.Xml())
+	}
+	xml += fmt.Sprintln("</TestReport>")
+	return xml
+}
+
+/**************************************************************************
+ * TestReport.Json - JSON representation of the TestReport
+ */
+func (tr *TestReport) Json() (string, os.Error) {
+	if tr.TestSet != nil {
+		b, err := json.Marshal(tr)
+		if err != nil {
+			return "", err
+		}
+		return string(b[:]), err
+	}
+	return "", nil
+
+}
+
+/*************************************************************************
+ * TestReport.Html - HTML representation of the TestReport.
+ * Uses HTML5 standard.
+ */
+func (tr *TestReport) Html() (string, os.Error) {
+	var html = ""
+	if tr.TestSet != nil {
+		html += tr.addHeader2Html()
+		for _, tc := range tr.TestSet.Cases {
+			html += tr.addTestCase2Html(&tc)
+		}
+	}
+	return html, nil
+}
+
+/*
+ * TestReport.addHeader2Html - add a <header> section to HTML report
+ */
+func (tr *TestReport) addHeader2Html() string {
+	html := fmt.Sprintln("<header>")
+	html += fmt.Sprintf("<h1>Test Report: %s</h1>\n", tr.TestSet.Name)
+	html += fmt.Sprintln("<table>")
+	html += fmt.Sprintln("<tr><td><b>Execution Started</b></td>")
+	html += fmt.Sprintf("<td>%s</td></tr>\n", tr.Started)
+	html += fmt.Sprintln("<tr><td><b>Execution Finished</b></td>")
+	html += fmt.Sprintf("<td>%s</td></tr>\n", tr.Finished)
+	html += fmt.Sprintln("</table>")
+	html += fmt.Sprintln("<p />")
+	html += fmt.Sprintln("<table>")
+	if tr.TestSet.Setup != nil {
+		html += fmt.Sprintf("<tr><td>Setup</td><td>%s</td>",
+			tr.TestSet.Setup.String())
+		html += fmt.Sprintf("<td class=%q>%s</td></tr>\n",
+			resolveHtmlClass(tr.TestSet.Setup), tr.TestSet.Setup.Result())
+	}
+	if tr.TestSet.Cleanup != nil {
+		html += fmt.Sprintf("<tr><td>Cleanup</td><td>%s</td>",
+			tr.TestSet.Cleanup.String())
+		html += fmt.Sprintf("<td class=%q>%s</td></tr>\n",
+			resolveHtmlClass(tr.TestSet.Cleanup), tr.TestSet.Cleanup.Result())
+	}
+	html += fmt.Sprintln("</table>")
+	html += fmt.Sprintln("</header>")
+	return html
+}
+
+/*
+ * TestReport.addSut2Html - add a system under test data to HTML report
+ */
+func (tr *TestReport) addSut2Html(sut *SysUnderTest) string {
+	html := fmt.Sprintln("<table>")
+	html += fmt.Sprintf("<tr><th>System Under Test</th><th>%s</th></tr>\n",
+		sut.Name)
+	html += fmt.Sprintf("<tr><td>Type</td><td>%s</td></tr>", sut.Systype)
+	html += fmt.Sprintf("<tr><td>Version</td><td>%s</td></tr>", sut.Version)
+	html += fmt.Sprintf("<tr><td>IP Address</td><td>%s</td></tr>", sut.IPaddr)
+	html += fmt.Sprintf("<tr><td>Description</td><td>%s</td></tr>",
+		sut.Description)
+	html += fmt.Sprintln("</table>")
+	html += fmt.Sprintln("<p />")
+	return html
+}
+
+/*
+ * TestReport.addConfig2Html - add a configuration data to HTML report
+ */
+/*
+func (tr *TestReport) addConfig2Html(cfg *Configuration) string {
+    html := fmt.Sprintln("<section>")
+    html += fmt.Sprintf("<h2>Configuration: %s</h2>", cfg.Name)
+    html += fmt.Sprintln("<article>")
+    html += tr.addSut2Html(cfg.Sut)
+    html += fmt.Sprintln("</article>")
+    html += fmt.Sprintln("<article><table>")
+    html += fmt.Sprintf("<tr><td class=%q>Setup</td><td>%s</td>", 
+            "name", cfg.Setup.String())
+    html += fmt.Sprintf("<td class=%q>%s</td></tr>\n",
+            resolveHtmlClass(cfg.Setup), cfg.Setup.Result())
+    html += fmt.Sprintf("<tr><td class=%q>Cleanup</td><td>%s</td>", 
+            "name", cfg.Cleanup.String())
+    html += fmt.Sprintf("<td class=%q>%s</td></tr>\n",
+            resolveHtmlClass(cfg.Cleanup), cfg.Cleanup.Result())
+    html += fmt.Sprintln("</table></article>")
+    for _, tc := range cfg.Cases {
+        html += tr.addTestCase2Html(&tc)
+    }
+    html += fmt.Sprintln("</section>")
+    return html
+}
+*/
+/*
+ * TestReport.addTestCase2Html - add a test case data to HTML report
+ */
+func (tr *TestReport) addTestCase2Html(tc *TestCase) string {
+	html := "<article>\n"
+	html += fmt.Sprintf("<h3>Test Case: %s</h3>", tc.Name)
+	html += "<table>\n"
+	html += fmt.Sprintf("<tr><th class=%q>Name</th><th>Action</th>", "name")
+	html += fmt.Sprintf("<th class=%q>Expected Status</th>", "status")
+	html += fmt.Sprintf("<th class=%q>Status</th></tr>\n", "status")
+	html += fmt.Sprintf("<tr><td>Setup</td><td>%s</td><td>Pass</td>",
+		tc.Setup.String())
+	html += fmt.Sprintf("<td class=%q>%s</td></tr>\n",
+		resolveHtmlClass(tc.Setup), tc.Setup.Result())
+	for _, step := range tc.Steps {
+		html += tr.addStep2Html(&step)
+	}
+	html += fmt.Sprintf("<tr><td>Cleanup</td><td>%s</td><td>Pass</td>",
+		tc.Cleanup.String())
+	html += fmt.Sprintf("<td class=%q>%s</td></tr>\n",
+		resolveHtmlClass(tc.Cleanup), tc.Cleanup.Result())
+	html += fmt.Sprintln("</table><p />")
+	html += "</article>\n"
+	return html
+}
+
+/*
+ * TestReport.addStep2Html - add a test step data to HTML report
+ */
+func (tr *TestReport) addStep2Html(step *TestStep) string {
+	// let's see if step has passed and set the HTML class accordingly
+	class := resolveHtmlClass(step)
+	html := fmt.Sprintf("<tr><td>%s</td>", step.Name)
+	html += fmt.Sprintf("<td>%s</td><td>%s</td>", step.String(), step.Expected)
+	html += fmt.Sprintf("<td class=%q>%s</td></tr>\n", class, step.Status)
+	return html
+}
+
+/*
+ * resolveHtmlClass - takes a structure and determines which CSS class should
+ * be used in HTML report. Only 'Action' (for setup and cleanup actions) and 
+ * 'TestStep' types are evaluated. The CSS classes are used to define
+ * background color according to status of the Action/TestStep: red, green etc.
+ */
+func resolveHtmlClass(structure interface{}) (cls string) {
+	cls = ""
+	switch t := structure.(type) {
+	case *Action:
+		if t.Success {
+			cls = "passed"
+		} else {
+			cls = "failed"
+		}
+	case *TestStep:
+		switch t.Status {
+		case Pass:
+			cls = "passed"
+		case Fail:
+			cls = "failed"
+		case NotTested:
+			cls = "nottested"
+		}
+	}
+	return cls
+}
+
+/*
+ * CreateTestReport - function that creates the TestSet struct
+ */
+func CreateTestReport(ts *TestSet) *TestReport {
+	return &TestReport{ts, "", "", ""}
+}
