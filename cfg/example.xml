@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TestSet name="testset">
+    <TestPlan>A (still) non-existing test plan</TestPlan>
+    <Description>This is a very detailed description of the test set.
+    I think...</Description>
+    <Setup>
+        <Script>test/scripts/test.py</Script> <Args>arg1</Args> 
+        <Description>A test set setup action description</Description> 
+    </Setup>
+
+    <Cleanup> 
+        <Script>test/scripts/test.py</Script> <Args>arg1</Args>
+        <Description />
+    </Cleanup>
+
+    <TestCase name="The First Test Case" expected="1">
+        <Description>This is a test case description.</Description>
+
+        <Setup>
+            <Script>test/scripts/test.py</Script> <Args>arg1</Args> 
+            <Description /> 
+        </Setup>
+
+        <TestStep name="step1" expected="1" >
+            <Action
+                <Script>test/scripts/test.py</Script> <Args>arg1</Args>
+            </Action>
+            <Description />
+        </TestStep>
+
+        <TestStep name="step2" expected="1" >
+            <Action>
+            <Script>test/scripts/test.pl</Script> <Args>arg1 arg2</Args>
+            </Action>
+            <Description />
+        </TestStep>
+
+        <TestStep name="step3" expected="1" >
+            <Action>
+            <Script>test/scripts/test.tcl</Script> <Args>arg1 arg2 arg3</Args>
+            </Action>
+            <Description />
+        </TestStep>
+
+        <Cleanup>
+            <Script>action0</Script> <Args></Args> <Description />
+        </Cleanup>
+
+    </TestCase>
+
+    <TestCase name="The Second Test Case" expected="1">
+        <Description>This is case description.</Description>
+
+        <Setup>
+            <Action>
+                <Script>test/scripts/test.pl</Script> <Args>arg1 arg2</Args>
+            </Action>
+            <Description />
+        </Setup>
+
+        <TestStep name="step4" expected="1" >
+            <Action><Script>test/scripts/test.rb</Script><Args /></Action>
+            <Description />
+        </TestStep>
+
+        <TestStep name="step5" expected="1" >
+            <Action><Script>test/scripts/test.groovy</Script><Args /></Action>
+            <Description />
+        </TestStep>
+
+        <TestStep name="step6" expected="1" >
+            <Action>
+                <Script>test/scripts/hello.jar</Script><Args>arg1</Args>
+            </Action>
+            <Description />
+        </TestStep>
+
+        <TestStep name="step7" expected="1" >
+            <Action>
+                <Script>test/scripts/uname.exe</Script><Args>--help</Args>
+            </Action>
+            <Description />
+        </TestStep>
+
+        <TestStep name="step8" expected="1" >
+            <Action><Script>test/scripts/test.py</Script><Args></Args></Action>
+            <Description />
+        </TestStep>
+
+        <TestStep name="step9" expected="1" >
+            <Action>
+                <Script>test/scripts/test.py</Script><Args>arg1</Args>
+            </Action>
+            <Description />
+        </TestStep>
+
+        <Cleanup>
+            <Action>
+                <Script>test/scripts/test.py</Script><Args>arg1</Args>
+            </Action>
+            <Description />
+        </Cleanup>
+
+    </TestCase>
+
+    <TestCase name="The Third Test Case" expected="1">
+        <Description>This is case description.</Description>
+
+        <Setup />
+
+        <TestStep name="step0" expected="1" >
+            <Action><Script>action0</Script> <Args /></Action>
+            <Description />
+        </TestStep>
+
+        <Cleanup><Script>action0</Script><Args /><Description /></Cleanup>
+
+    </TestCase>
+
+    <TestCase name="The Fourth Test Case" expected="1">
+        <Description>This is case description.</Description>
+
+        <Setup>
+            <Action>
+                <Script>test/scripts/test.py</Script> <Args>arg1</Args>
+            </Action>
+            <Description />
+        </Setup>
+
+        <TestStep name="step9" expected="1" >
+            <Action>
+                <Script>test/scripts/test.py</Script> <Args>arg1</Args>
+            </Action>
+            <Description />
+        </TestStep>
+        
+        <TestStep name="step8" expected="1" >
+            <Action>
+                <Script>test/scripts/test.py</Script> <Args>arg1 arg2</Args>
+            </Action>
+            <Description />
+        </TestStep>
+
+        <TestStep name="step7" expected="1" >
+            <Action>
+                <Script>test/scripts/uname.exe</Script> <Args>-a</Args>
+            </Action>
+            <Description />
+        </TestStep>
+
+        <Cleanup />
+
+    </TestCase>
+
+    <TestCase name="The Fifth Test Case" expected="3">
+        <Description>This is case description.</Description>
+
+        <Setup />
+
+        <TestStep name="step6" expected="1" >
+            <Action>
+            <Script>test/scripts/hello.jar</Script> <Args>arg2 arg3 arg4</Args>
+            </Action>
+            <Description />
+        </TestStep>
+
+        <TestStep name="step5" expected="1" >
+            <Action><Script>test/scripts/test.groovy</Script><Args /></Action>
+            <Description />
+        </TestStep>
+
+        <TestStep name="step4" expected="1" >
+            <Action>
+                <Script>test/scripts/test.rb</Script> <Args>arg1 arg2</Args>
+            </Action>
+            <Description />
+        </TestStep>
+
+         <TestStep name="step3" expected="1" >
+            <Action>
+               <Script>test/scripts/test.tcl</Script><Args>arg1 arg2 arg3</Args>
+            </Action>
+            <Description />
+        </TestStep>
+
+        <Cleanup />
+
+    </TestCase>
+
+</TestSet>
