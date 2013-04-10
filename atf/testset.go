@@ -187,13 +187,13 @@ func (ts *TestSet) CleanupAfterTsetSetupFail() string {
  * TestSet.Execute - executes the whole test set
  */
 func (ts *TestSet) Execute(display *ExecDisplayFnCback) {
-    output := ""
+	output := ""
 	// define function from function pointer
 	_d := *display
 	//
 	_d("notice", fmt.Sprintf(">>> Entering Test Set %q\n", ts.Name))
 	if ts.Setup != nil {
-        output = ts.Setup.Execute()
+		output = ts.Setup.Execute()
 		_d("notice", fmt.Sprintln("Executing setup script"))
 		_d("info", FmtOutput(output))
 		// if setup script has failed, there's no need to proceed...

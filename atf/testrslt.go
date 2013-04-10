@@ -8,11 +8,11 @@ package atf
  * validTestResult - a slice of valid test result (string) values
  */
 var validTestResults = []string{"UnknownResult", "Pass", "Fail",
-                                "XFail", "NotTested"}
+	"XFail", "NotTested"}
 
 /*
  * ValidTestResult - a function that returns the slice of valid test result
- * values; we are a function to publicly make this slice a constant
+ * values; we use a function to publicly make this slice a constant
  */
 func ValidTestResults() []string { return validTestResults }
 
@@ -21,21 +21,21 @@ func ValidTestResults() []string { return validTestResults }
  * value; returns true or false, of course
  */
 func IsValidTestResult(val string) bool {
-    status := false
-    for _, v := range validTestResults {
-        if v == val {
-            status = true
-            break
-        }
-    }
-    return status
+	status := false
+	for _, v := range validTestResults {
+		if v == val {
+			status = true
+			break
+		}
+	}
+	return status
 }
 
 /*
  * TestResult - a struct hiding a string value for test result
  */
 type TestResult struct {
-    result string // this data is private
+	result string // this data is private
 }
 
 /*
@@ -52,11 +52,10 @@ func (tr *TestResult) Get() string { return tr.result }
  * TestResult.Set - set a value of test result
  */
 func (tr *TestResult) Set(val string) (err error) {
-    if IsValidTestResult(val) {
-        tr.result = val
-    } else {
-        err = ATFError_Invalid_Test_Result
-    }
-    return err
+	if IsValidTestResult(val) {
+		tr.result = val
+	} else {
+		err = ATFError_Invalid_Test_Result
+	}
+	return err
 }
-

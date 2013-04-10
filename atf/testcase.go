@@ -233,7 +233,7 @@ func (tc *TestCase) evaluate() {
 	//if tc.Setup.Status != Pass || tc.Cleanup.Status != Pass {
 	if tc.Setup.Status.Get() == "Fail" || tc.Cleanup.Status.Get() == "Fail" {
 		tc.Status.Set("Fail")
-        fmt.Println("DEBUG: setup or cleanup is not Pass") // DEBUG
+		fmt.Println("DEBUG: setup or cleanup is not Pass") // DEBUG
 		return
 	}
 	// otherwise compare steps' expected and final results
@@ -250,7 +250,7 @@ func (tc *TestCase) evaluate() {
 				break
 			}
 		default:
-		    // by definition, only PASS & XFAIL are allowed as expected results 
+			// by definition, only PASS & XFAIL are allowed as expected results 
 			tc.Status.Set("NotTested")
 		} /* switch */
 	} /* for */

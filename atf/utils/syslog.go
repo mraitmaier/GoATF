@@ -123,7 +123,7 @@ func (s *SyslogMsg) Send(ip string) error {
 	}
 	addr = net.ParseIP(s.Hostname)
 	// let's make an UDP connection and send the message
-	conn, err := net.DialUDP("udp", nil, &net.UDPAddr{addr, SyslogPort})
+	conn, err := net.DialUDP("udp", nil, &net.UDPAddr{addr, SyslogPort, ""})
 	if err != nil {
 		return err
 	}

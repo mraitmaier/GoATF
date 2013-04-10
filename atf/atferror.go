@@ -17,7 +17,7 @@ const (
 	ATFError_Unknown
 	ATFError_Invalid_Value // substitute for EINVAL
 	ATFError_Unknown_Report_Type
-    ATFError_Invalid_Test_Result
+	ATFError_Invalid_Test_Result
 )
 
 // implementing the 'error' interface
@@ -30,8 +30,8 @@ func (e AtfError) Error() string {
 		msg = "Invalid value"
 	case ATFError_Unknown_Report_Type:
 		msg = "Unknown report type"
-    case ATFError_Invalid_Test_Result:
-        msg = "Invalid test result value"
+	case ATFError_Invalid_Test_Result:
+		msg = "Invalid test result value"
 	}
 	return msg
 }

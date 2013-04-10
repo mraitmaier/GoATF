@@ -18,9 +18,9 @@ import (
  * TestReport - this is 
  */
 type TestReport struct {
-    TestSet *TestSet    // TestSet sctructure that will be executed
-	Started  string     // execution start timestamp (as a string)
-	Finished string     // execution finish timestamp (as a string)
+	TestSet  *TestSet // TestSet sctructure that will be executed
+	Started  string   // execution start timestamp (as a string)
+	Finished string   // execution finish timestamp (as a string)
 }
 
 /*
@@ -42,15 +42,15 @@ func (tr *TestReport) Name() string { return tr.TestSet.Name }
  */
 func (tr *TestReport) Xml() (x string, err error) {
 
-    x = ""
-    if tr.TestSet != nil {
-        b, err := xml.MarshalIndent(tr, "  ", "    ")
-        if err != nil {
-            return "", err
-        }
-        x = string(b[:])
-    }
-    return
+	x = ""
+	if tr.TestSet != nil {
+		b, err := xml.MarshalIndent(tr, "  ", "    ")
+		if err != nil {
+			return "", err
+		}
+		x = string(b[:])
+	}
+	return
 }
 
 /**************************************************************************
@@ -95,9 +95,9 @@ func (tr *TestReport) addHeader2Html() string {
 	html += fmt.Sprintf("<td>%s</td></tr>\n", tr.Finished)
 	html += fmt.Sprintln("</table>")
 	html += fmt.Sprintln("<p />")
-    if tr.TestSet.SysUnderTest != nil {
-        html += fmt.Sprintln(tr.addSut2Html(tr.TestSet.SysUnderTest))
-    }
+	if tr.TestSet.SysUnderTest != nil {
+		html += fmt.Sprintln(tr.addSut2Html(tr.TestSet.SysUnderTest))
+	}
 	html += fmt.Sprintln("<table>")
 	if tr.TestSet.Setup != nil {
 		html += fmt.Sprintf("<tr><td>Setup</td><td>%s</td>",

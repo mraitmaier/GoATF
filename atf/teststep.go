@@ -123,7 +123,7 @@ func (ts *TestStep) Execute(display *ExecDisplayFnCback) {
 			ts.Status.Set("Pass")
 		}
 	default:
-        //only Pass & XFail are allowed as expected status 
+		//only Pass & XFail are allowed as expected status 
 		ts.Status.Set("NotTested")
 	}
 	_d("info", fmt.Sprintf("Test step evaluated to %q\n", ts.Status))

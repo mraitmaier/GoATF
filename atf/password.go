@@ -37,9 +37,7 @@ func (p *Password) Set(passwd string) { p.pwd = p.hashPwd(passwd) }
 /*
  * Password.Get - return a stored hashed password
  */
-func (p *Password) Get() string {
-	return fmt.Sprintf("%x", (p.pwd))
-}
+func (p *Password) Get() string { return fmt.Sprintf("%x", (p.pwd)) }
 
 /*
  * Password.Cmp - compare arbitrary password to the one stored 

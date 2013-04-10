@@ -137,7 +137,7 @@ func (a *Action) Json() (string, error) {
  * if not, 'success' is always set.
  */
 func (a *Action) Execute() (output string) {
-	a.updateFlags() // let's update the actions flags...
+	a.updateFlags()      // let's update the actions flags...
 	a.Status.Set("Pass") // we assume execution will be successful
 
 	// We execute the action only if it's marked executable
@@ -165,8 +165,8 @@ func (a *Action) Execute() (output string) {
  * actions.
  */
 func CreateAction(script string, args string) *Action {
-    return &Action{script, args, TestResult{"UnknownResult"}, 
-        "", "", true, false}
+	return &Action{script, args, TestResult{"UnknownResult"},
+		"", "", true, false}
 }
 
 /*****************************************************************************
@@ -182,13 +182,13 @@ func CreateManualAction(descr string) *Action {
 }
 
 /*****************************************************************************
- * CreateAction - create a normal scripted/automated action
+ * CreateEmptyAction - create ani empty (do-nothing) action
  *
  * This is creation function for empty (do-nothing) action. All fields are set
  * apropriately: only flags are actually needed. The 'manual' and 'executable'
  * flags are reset, 'success' flag is set.
  */
 func CreateEmptyAction() *Action {
-	return &Action{"No action", "", TestResult{"Pass"}, "", 
-        "No action", false, false}
+	return &Action{"No action", "", TestResult{"Pass"}, "",
+		"No action", false, false}
 }
