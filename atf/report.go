@@ -1,8 +1,15 @@
 /*
- * report.go
+ * report.go - implementation of the Reporter module
+ *
+ * This module is repsonsible for creating reports. According to input data,
+ * different reports can be created: HTML, XML, JSON and plain text (the last
+ * one has not been implemented yet and it might be omitted in the end, since
+ * I'm not sure this is actually needed). These reports are written as files to
+ * a specified path. By default, only HTML report is
+ * created.
  *
  * History:
- *  0.1.0   Jul10   MR  The initial version
+ *  1   Jul10   MR  The initial version
  */
 
 package atf

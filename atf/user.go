@@ -1,5 +1,8 @@
 /*
- * user.go 
+ * user.go  - implemetation of the User type
+ *
+ * This data struct should be used for user authorization. Once the web
+ * application is done...
  *
  * History:
  *  0.1   Jun11 MR Initial version, limited testing

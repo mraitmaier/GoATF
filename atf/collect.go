@@ -1,5 +1,11 @@
 /*
- * collect.go
+ * collect.go - implementation of the collector module
+ *
+ * Collector is a module that collects the configuration (from configuration
+ * file) and builds the type hierarchy (that is: scripts) to be executed. 
+ * The configuration can be encoded as JSON or XML or plain text (that one is 
+ * not implemented yet and frankly I'm not sure that is actually needed; so it 
+ * might be omitted in the end...)
  *
  * History:
  *  0.1.0   Apr10   MR  The initial version

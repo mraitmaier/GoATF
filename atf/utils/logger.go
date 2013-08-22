@@ -1,7 +1,12 @@
 /*
  * logger.go -  custom logger implementation
  *
- * Default log module is simply not enough
+ * Default log module simply doesn't offer enough functionality and
+ * flexibility, so I'm writing my own. It is more or less based on standard
+ * python logger (and that one is based on log4j, AFAIK). Also, it borrows
+ * ideas from standard Unix syslog implementation.
+ * This logger can simultaneously log to STDOUT/ERR, to a file and to standard
+ * syslog port (UDP:514) or any combinations of these.
  *
  * History:
  *  0.1.0   Jul11   MR  The initial version

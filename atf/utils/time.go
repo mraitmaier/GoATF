@@ -1,6 +1,8 @@
 /*
  * time.go -  misc utility functions for working with  date/time
  *
+ * The collection of some easy but handy functions regarding time/date that I
+ * need in GoATF.
  * History:
  *  0.1.0   Jul11   MR  The initial version
  */

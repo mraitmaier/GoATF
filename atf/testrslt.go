@@ -1,5 +1,8 @@
 /*
- * testrslt.go
+ * testrslt.go - implementation of the TestResult type
+ *
+ * This type defines the valid test results (pass/fail/xfail...) and valid 
+ * operations on them.
  */
 
 package atf

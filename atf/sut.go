@@ -1,5 +1,9 @@
 /*
  * sut.go - file defining SysUnderTest struct and its methods
+ * 
+ * SUT is just descriptive structure that keeps some information about the
+ * TestSet currently executed (used in configuration and in reports), it 
+ * doesn't have any influence on execution.
  */
 
 package atf

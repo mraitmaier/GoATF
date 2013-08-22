@@ -1,5 +1,13 @@
 /*
- * testset.go 
+ * testset.go - implementation of the TestSet type
+ *
+ * The TestSet is an executable version of TestPlan: TestSet is executed, while
+ * the TestPlan should serve only as a reference to a document that is stored
+ * into database.
+ *
+ * NOTE: I'm not sure this is the right approach, but as a Go-learning step,
+ * this is how it's currently done. It might even disappear in the future (or
+ * the TestSet type).
  *
  * History:
  *  0.1   Apr10 MR Initial version, limited testing

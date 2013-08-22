@@ -1,5 +1,9 @@
 /*
- * structure.go 
+ * teststep.go - implementation of the TestStep type 
+ *
+ * This data structure represents the single test case (executable) step (or
+ * action). It is always expected for a step to pass, so the self-evaluation is
+ * as simple as possible.
  *
  * History:
  *  0.1   Apr10 MR Initial version, limited testing

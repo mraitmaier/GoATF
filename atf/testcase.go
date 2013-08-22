@@ -1,5 +1,11 @@
 /*
- * testcase.go 
+ * testcase.go  - implementation of the TestCase type
+ *
+ * This type represents the test case and is the central data struct of the
+ * complete application. TestCase is built from separate test steps (that are
+ * self-evaluated: pass/fail) , including setup and cleanup actions, and the 
+ * TestCase itself uses the evaluation algorithm to self evaluate (pass/fail) 
+ * itself according to expected result.
  *
  * History:
  *  0.1   Apr10 MR Initial version, limited testing

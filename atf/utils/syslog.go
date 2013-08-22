@@ -1,3 +1,9 @@
+/*
+ * syslog.go - implementation  of the standard syslog (client!) functionality
+ *
+ * This module is a part of the logger. It implements the subset of the
+ * standard syslog client functionality (the subset I need...)
+ */
 package utils
 
 import (

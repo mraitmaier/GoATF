@@ -1,5 +1,10 @@
 /*
- * testrpt.go 
+ * testrpt.go  - implementation of the TestReport type
+ *
+ * The TestReport represents the single TestSet run report. It is basically
+ * extended TestSet, I'm only adding timestamps when the execution of the 
+ * TestSet was started and when it was finished. As such, this report is ready
+ * to be saved directly into database (regardless of its form - HTML, XML...)
  *
  * History:
  *  0.1   jun11 MR Initial version, limited testing
@@ -18,9 +23,15 @@ import (
  * TestReport - this is 
  */
 type TestReport struct {
-	TestSet  *TestSet // TestSet sctructure that will be executed
-	Started  string   // execution start timestamp (as a string)
-	Finished string   // execution finish timestamp (as a string)
+
+    // TestSet sctructure that will be executed
+	TestSet  *TestSet
+
+    // execution start timestamp (as a string)
+	Started  string
+
+    // execution finish timestamp (as a string)
+	Finished string
 }
 
 /*

@@ -32,7 +32,7 @@ type Runner struct {
 	cssfile string
 	xml     bool       // create XML report (beside HTML report)
 	debug   bool       // enable debug mode (for testing purposes only)
-	logger  *utils.Log // a logger instance (
+	logger  utils.Log // a logger instance (
 }
 
 /*
