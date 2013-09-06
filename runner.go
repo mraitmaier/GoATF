@@ -1,5 +1,6 @@
 /*
- * main.go - the file to rule them all
+ * runner.go - the definition of the Runner struct & type, the main GoATF
+ * CLI application data structure
  */
 package main
 
@@ -26,6 +27,7 @@ type Runner struct {
 	report  string
 	cssfile string
 	xml     bool       // create XML report (beside HTML report)
+    par     bool       // run tests in parallel? (default: false) TODO
 	debug   bool       // enable debug mode (for testing purposes only)
 	logger  *utils.Log // a logger instance (
 }
@@ -37,6 +39,7 @@ type Runner struct {
 func NewRunner() *Runner {
 	var r = new(Runner)
 	r.logger = utils.NewLog(numOfLoggers)
+    r.par = false // run sequentially by default
 	return r
 }
 
@@ -53,6 +56,7 @@ func (r *Runner) display(complete bool) {
 	fmt.Printf("Final report name: %q\n", r.report)
 	fmt.Printf("(Optional) CCS file for HTML report: %q\n", r.cssfile)
 	fmt.Printf("Debug node enabled? %t\n", r.debug)
+	fmt.Printf("Parallel execution? %t\n", r.par)
 	// display loggers
 	fmt.Printf("Loggers (total # = %d):\n", r.logger.Len())
 	if r.logger != nil {
@@ -341,3 +345,7 @@ func (r *Runner) CreateReports() {
 	}
 }
 
+/*
+ * Runner.SetParallel - set the flag to execute the test cases in parallel 
+ */
+func (r *Runner) SetParallel() { r.par = true }
