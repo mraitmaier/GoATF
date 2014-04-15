@@ -1,15 +1,18 @@
 /*
- * logger.go -  custom logger implementation
- *
- * Default log module simply doesn't offer enough functionality and
- * flexibility, so I'm writing my own. It is more or less based on standard
- * python logger (and that one is based on log4j, AFAIK). Also, it borrows
- * ideas from standard Unix syslog implementation.
- * This logger can simultaneously log to STDOUT/ERR, to a file and to standard
- * syslog port (UDP:514) or any combinations of these.
- *
- * History:
- *  0.1.0   Jul11   MR  The initial version
+   Custom logger implementation.
+  
+   Default log module simply doesn't offer enough functionality and
+   flexibility, so I'm writing my own. It is more or less based on standard
+   python logger (and that one is based on log4j, AFAIK). Also, it borrows
+   ideas from standard Unix syslog implementation.
+   This logger can simultaneously log to STDOUT/ERR, to a file and to standard
+   syslog port (UDP:514) or any combinations of these.
+  
+ */
+
+/*
+   History:
+    1   Jul11   MR  The initial version
  */
 
 package utils
@@ -21,12 +24,8 @@ import (
 	"time"
 )
 
-/************************** LogLevel ***********************************/
-/*
- * LogLevel - an enum defining log levels
- */
+/* An enum defining log levels */
 type LogLevel Severity
-
 const (
 	EmergencyLogLevel LogLevel = iota
 	AlertLogLevel
@@ -39,10 +38,7 @@ const (
 	UnknownLogLevel
 )
 
-/*
- * LogLevel.String - a method returning the string representation of the
- *                   LogLevel value
- */
+/* Method returning the string representation of the LogLevel value */
 func (ll LogLevel) String() (s string) {
 	switch ll {
 	case EmergencyLogLevel:
@@ -68,10 +64,8 @@ func (ll LogLevel) String() (s string) {
 }
 
 /*
- * LogLevelFromString - converts log level given as string into proper LogLevel
- *                      value
- *
- * If invalid string is given, function returns 'UnknownLogLevel' value.
+ Converts log level given as string into proper LogLevel value.  
+ If invalid string is given, function returns 'UnknownLogLevel' value.
  */
 func LogLevelFromString(lvl string) LogLevel {
 	loglvl := UnknownLogLevel
@@ -96,10 +90,7 @@ func LogLevelFromString(lvl string) LogLevel {
 	return loglvl
 }
 
-/************************** Logger ***********************************/
-/*
- * Logger - an interface defining methods for various log handlers
- */
+/* Interface defining methods for various log handlers */
 type Logger interface {
 	Emergency(string)
 	Alert(string)
@@ -113,23 +104,24 @@ type Logger interface {
 	Close()
 }
 
-/************************** logHandler ***********************************/
-/*
- * logHandler - private struct that defines log level and format
- */
+/* Private type that defines log level and format */
 type logHandler struct {
 	level  LogLevel /* log level set for this LogHandler */
 	format string   /* a formatter for this LogHandler */
 }
-
+/* Returns the log level. */
 func (l *logHandler) Level() LogLevel { return l.level }
 
+/* Set the log level. */
 func (l *logHandler) SetLevel(lvl LogLevel) { l.level = lvl }
 
+/* Returns the log message format. */
 func (l *logHandler) Format() string { return l.format }
 
+/* Set the log message format. */
 func (l *logHandler) SetFormat(fmt string) { l.format = fmt }
 
+/* Create new empty log handler instance. */
 func newLogHandler(fmt string, lvl LogLevel) *logHandler {
 	return &logHandler{lvl, fmt}
 }

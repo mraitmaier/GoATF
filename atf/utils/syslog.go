@@ -1,5 +1,5 @@
 /*
- * syslog.go - implementation  of the standard syslog (client!) functionality
+ * Implementation  of the standard syslog client functionality
  *
  * This module is a part of the logger. It implements the subset of the
  * standard syslog client functionality (the subset I need...)
@@ -12,9 +12,8 @@ import (
 	"net"
 	"time"
 )
-
+/* Defines syslog severity */
 type Severity int
-
 const (
 	Emergency Severity = iota
 	Alert
@@ -25,7 +24,7 @@ const (
 	Informational
 	Debug
 )
-
+/* Usual string representation. */
 func (s Severity) String() string {
 	switch s {
 	case Emergency:
@@ -49,9 +48,8 @@ func (s Severity) String() string {
 	}
 	return ""
 }
-
+/* Implementation of the syslog facility. */
 type Facility int
-
 const (
 	FacKernel Facility = iota
 	FacUser
@@ -82,65 +80,61 @@ const (
 const (
 	// Define a standard syslog message timestamp format
 	TimestampFmt = "Jan _2 15:04:05"
+
 	// Standard UDP port for syslog is 514
 	SyslogPort = 514
 )
 
-/*
- * SyslogMsg 
- */
+/* Implementation of the complete syslog messagea.  */
 type SyslogMsg struct {
 	Sev                 Severity
 	Fac                 Facility
 	timestamp, Hostname string
 	Msg                 string
 }
-
+/* Returns syslog message's priority as a string. */
 func (s *SyslogMsg) Priority() string {
 	pri := int(s.Sev) + (8 * int(s.Fac))
 	return fmt.Sprintf("<%d>", pri)
 }
 
+/* Returns syslog message's timestamp as a string. */
 func (s *SyslogMsg) TimeStamp() string { return s.timestamp }
 
+/* Set syslog message's timestamp. */
 func (s *SyslogMsg) SetTimestamp(stamp time.Time) {
 	s.timestamp = stamp.Format(TimestampFmt)
 }
 
+/* Set syslog message's timestamp. Timestamp is defined as a string. */
 func (s *SyslogMsg) SSetTimestamp(stamp string) error {
 	t, err := time.Parse(TimestampFmt, stamp)
-	if err != nil {
-		return err
-	}
+	if err != nil { return err }
 	s.SetTimestamp(t)
 	return nil
 }
 
+/* Return the complete syslog message. */
 func (s *SyslogMsg) Get() string {
 	format := "%s%s %s %s"
 	return fmt.Sprintf(format, s.Priority(), s.timestamp, s.Hostname, s.Msg)
 }
 
+/* Send a syslog message to given IP address. */
 func (s *SyslogMsg) Send(ip string) error {
 	var addr net.IP
 	// local IP address overrides the Hostname field
-	if ip != "" {
-		s.Hostname = ip
-	}
+	if ip != "" { s.Hostname = ip }
 	addr = net.ParseIP(s.Hostname)
 	// let's make an UDP connection and send the message
 	conn, err := net.DialUDP("udp", nil, &net.UDPAddr{addr, SyslogPort, ""})
-	if err != nil {
-		return err
-	}
+	if err != nil { return err }
 	defer conn.Close()
 	fmt.Fprintf(conn, s.Get())
 	return nil
 }
 
-/*
- * NewSyslogMsg - create new syslog message with default fields
- */
+/* Create new syslog message with default fields */
 func NewSyslogMsg() *SyslogMsg {
 	return &SyslogMsg{Informational, FacLocal0, "", "", ""}
 }
