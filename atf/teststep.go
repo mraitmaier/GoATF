@@ -103,16 +103,22 @@ func (ts *TestStep) Html() (string, error) {
  * TestStep.Execute
  */
 func (ts *TestStep) Execute(display *ExecDisplayFnCback) {
+
 	// we turn the function ptr back to function 
 	_d := *display
+
 	// and start the execution
 	_d("notice", fmt.Sprintf(">>> Entering test step %q\n", ts.Name))
+
 	// we execute the action when it's not empty
 	if ts.Action != nil {
+	    _d("notice", fmt.Sprintf("Executing test step action: %q\n",
+                ts.Action.String()))
 		_d("info", FmtOutput(ts.Action.Execute()))
 	} else {
 		_d("error", fmt.Sprintln("Action is EMPTY?????"))
 	}
+
 	// let's evaluate expectations and final status of the step
 	switch ts.Expected {
 	case "Pass":

@@ -197,13 +197,17 @@ func (tc *TestCase) cleanupAfterCaseSetupFail() string {
 }
 
 func (tc *TestCase) Execute(display *ExecDisplayFnCback) {
+
 	// we turn function ptr back to function
 	_d := *display
+
 	// and start with execution...
 	_d("notice", fmt.Sprintf(">>> Entering TestCase %q\n", tc.Name))
+
 	// let's execute setup action (if not empty)
 	if tc.Setup != nil {
-		_d("notice", fmt.Sprintln("Executing case setup action"))
+		_d("notice", fmt.Sprintf("Executing case setup action: %q\n",
+                tc.Setup.String()))
 		_d("info", FmtOutput(tc.Setup.Execute()))
 		// if setup action has failed, skip the rest of the case
 		if tc.Setup.Status == "Fail" {
@@ -212,15 +216,18 @@ func (tc *TestCase) Execute(display *ExecDisplayFnCback) {
 	} else {
 		_d("notice", fmt.Sprintln("Setup action is not defined.\n"))
 	}
+
 	// now we execute the steps...
 	if tc.Steps != nil {
 		for _, step := range tc.Steps {
 			step.Execute(display)
 		}
 	}
+
 	// let's execute cleanup action (if not empty)
 	if tc.Cleanup != nil {
-		_d("notice", fmt.Sprintln("Executing case cleanup action"))
+		_d("notice", fmt.Sprintf("Executing case cleanup action: %q\n",
+                tc.Cleanup.String()))
 		_d("info", FmtOutput(tc.Setup.Execute()))
 	} else {
 		_d("notice", fmt.Sprintln("Cleanup action is not defined.\n"))
@@ -241,7 +248,7 @@ func (tc *TestCase) evaluate() {
 	//if tc.Setup.Status != Pass || tc.Cleanup.Status != Pass {
 	if tc.Setup.Status == "Fail" || tc.Cleanup.Status == "Fail" {
 		tc.Status.Set("Fail")
-		fmt.Println("DEBUG: setup or cleanup is not Pass") // DEBUG
+		//fmt.Println("DEBUG: setup or cleanup is not Pass") // DEBUG
 		return
 	}
 	// otherwise compare steps' expected and final results

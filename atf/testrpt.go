@@ -175,7 +175,7 @@ func (tr *TestReport) addTestCase2Html(tc *TestCase) string {
  */
 func (tr *TestReport) addStep2Html(step *TestStep) string {
 	// let's see if step has passed and set the HTML class accordingly
-    fmt.Printf("DEBUG step: %s\n", step.String()) // DEBUG
+    //fmt.Printf("DEBUG step: %s\n", step.String()) // DEBUG
 	class := resolveHtmlClass(step)
 	html := fmt.Sprintf("<tr><td>%s</td>", step.Name)
 	html += fmt.Sprintf("<td>%s</td><td>%s</td>",

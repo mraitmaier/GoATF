@@ -203,8 +203,9 @@ func (ts *TestSet) Execute(display *ExecDisplayFnCback) {
 	//
 	_d("notice", fmt.Sprintf(">>> Entering Test Set %q\n", ts.Name))
 	if ts.Setup != nil {
+		_d("notice", fmt.Sprintf("Executing setup script: %q\n",
+                ts.Setup.String()))
 		output = ts.Setup.Execute()
-		_d("notice", fmt.Sprintln("Executing setup script"))
 		_d("info", FmtOutput(output))
 		// if setup script has failed, there's no need to proceed...
 		if ts.Setup.Status == "Fail" {
@@ -221,7 +222,8 @@ func (ts *TestSet) Execute(display *ExecDisplayFnCback) {
 	}
 	//
 	if ts.Cleanup != nil {
-		_d("notice", fmt.Sprintln("Executing cleanup script"))
+		_d("notice", fmt.Sprintf("Executing cleanup script: %q\n",
+                ts.Cleanup.String()))
 		_d("info", FmtOutput(ts.Cleanup.Execute()))
 	} else {
 		_d("notice", fmt.Sprintln("Cleanup action is not defined:"))

@@ -5,12 +5,12 @@
     <Description>This is a very detailed description of the test set.
     I think...</Description>
     <Setup>
-        <Script>test/scripts/test.py</Script> <Args>arg1</Args> 
+        <Script>d:/test/test.py</Script> <Args>arg1</Args> 
         <Description>A test set setup action description</Description> 
     </Setup>
 
     <Cleanup> 
-        <Script>test/scripts/test.py</Script> <Args>arg1</Args>
+        <Script>d:/test/test.py</Script> <Args>arg1</Args>
         <Description />
     </Cleanup>
 
@@ -29,7 +29,7 @@
         <Description>This is a test case description.</Description>
 
         <Setup>
-            <Script>test/scripts/test.py</Script> <Args>arg1</Args> 
+            <Script>d:/test/test.py</Script> <Args>arg1</Args> 
             <Description /> 
         </Setup>
 
@@ -37,7 +37,7 @@
         <TestStep expected="XFail">
             <Name>step1</Name>
             <Action>
-                <Script>test/scripts/test.py</Script> <Args>arg1</Args>
+                <Script>d:/test/test.py</Script> <Args>arg1</Args>
             </Action>
             <Description />
         </TestStep>
@@ -45,7 +45,7 @@
         <TestStep expected="Pass" status="NotTested" >
             <Name>step2</Name>
             <Action>
-            <Script>test/scripts/test.pl</Script> <Args>arg1 arg2</Args>
+                <Script>d:/test/test.pl</Script> <Args>arg1 arg2</Args>
             </Action>
             <Description />
         </TestStep>
@@ -53,7 +53,7 @@
         <TestStep expected="Pass" status="Fail">
             <Name>step3</Name>
             <Action>
-            <Script>test/scripts/test.tcl</Script> <Args>arg1 arg2 arg3</Args>
+                <Script>d:/test/test.tcl</Script> <Args>arg1 arg2 arg3</Args>
             </Action>
             <Description>a step3 description</Description>
         </TestStep>
@@ -72,7 +72,7 @@
 
         <Setup>
             <Action>
-                <Script>test/scripts/test.pl</Script> <Args>arg1 arg2</Args>
+                <Script>d:/test/test.pl</Script> <Args>arg1 arg2</Args>
             </Action>
             <Description />
         </Setup>
@@ -80,20 +80,20 @@
         <Steps>
         <TestStep expected="Pass" >
             <Name>step4</Name>
-            <Action><Script>test/scripts/test.rb</Script><Args /></Action>
+            <Action><Script>d:/test/test.rb</Script><Args /></Action>
             <Description />
         </TestStep>
 
         <TestStep expected="Pass" >
             <Name>step5</Name>
-            <Action><Script>test/scripts/test.groovy</Script><Args /></Action>
+            <Action><Script>d:/test/test.groovy</Script><Args /></Action>
             <Description />
         </TestStep>
 
         <TestStep expected="Pass" >
             <Name>step6</Name>
             <Action>
-                <Script>test/scripts/hello.jar</Script><Args>arg1</Args>
+                <Script>d:/test/hello.jar</Script><Args>arg1</Args>
             </Action>
             <Description />
         </TestStep>
@@ -101,21 +101,21 @@
         <TestStep expected="Pass">
             <Name>step7</Name>
             <Action>
-                <Script>test/scripts/uname.exe</Script><Args>--help</Args>
+                <Script>d:/test/uname.exe</Script><Args>--help</Args>
             </Action>
             <Description />
         </TestStep>
 
         <TestStep expected="Pass">
             <Name>step8</Name>
-            <Action><Script>test/scripts/test.py</Script><Args></Args></Action>
+            <Action><Script>d:/test/test.py</Script><Args></Args></Action>
             <Description />
         </TestStep>
 
         <TestStep expected="Pass">
             <Name>step9</Name>
             <Action>
-                <Script>test/scripts/test.py</Script><Args>arg1</Args>
+                <Script>d:/test/test.py</Script><Args>arg1</Args>
             </Action>
             <Description />
         </TestStep>
@@ -123,7 +123,7 @@
 
         <Cleanup>
             <Action>
-                <Script>test/scripts/test.py</Script><Args>arg1</Args>
+                <Script>d:/test/test.py</Script><Args>arg1</Args>
             </Action>
             <Description />
         </Cleanup>
@@ -155,7 +155,7 @@
 
         <Setup>
             <Action>
-                <Script>test/scripts/test.py</Script> <Args>arg1</Args>
+                <Script>d:/test/test.py</Script> <Args>arg1</Args>
             </Action>
             <Description />
         </Setup>
@@ -164,7 +164,7 @@
         <TestStep expected="Pass">
             <Name>step9</Name>
             <Action>
-                <Script>test/scripts/test.py</Script> <Args>arg1</Args>
+                <Script>d:/test/test.py</Script> <Args>arg1</Args>
             </Action>
             <Description />
         </TestStep>
@@ -172,7 +172,7 @@
         <TestStep expected="Pass">
             <Name>step8</Name>
             <Action>
-                <Script>test/scripts/test.py</Script> <Args>arg1 arg2</Args>
+                <Script>d:/test/test.py</Script> <Args>arg1 arg2</Args>
             </Action>
             <Description />
         </TestStep>
@@ -180,7 +180,7 @@
         <TestStep expected="Pass">
             <Name>step7</Name>
             <Action>
-                <Script>test/scripts/uname.exe</Script> <Args>-a</Args>
+                <Script>d:/test/uname.exe</Script> <Args>-a</Args>
             </Action>
             <Description />
         </TestStep>
@@ -201,21 +201,21 @@
         <TestStep expected="Pass">
             <Name>step6</Name>
             <Action>
-            <Script>test/scripts/hello.jar</Script> <Args>arg2 arg3 arg4</Args>
+                <Script>d:/test/hello.jar</Script> <Args>arg2 arg3 arg4</Args>
             </Action>
             <Description />
         </TestStep>
 
         <TestStep expected="Pass">
             <Name>step5</Name>
-            <Action><Script>test/scripts/test.groovy</Script><Args /></Action>
+            <Action><Script>d:/test/test.groovy</Script><Args /></Action>
             <Description />
         </TestStep>
 
         <TestStep expected="Pass">
             <Name>step4</Name>
             <Action>
-                <Script>test/scripts/test.rb</Script> <Args>arg1 arg2</Args>
+                <Script>d:/test/test.rb</Script> <Args>arg1 arg2</Args>
             </Action>
             <Description />
         </TestStep>
@@ -223,7 +223,7 @@
          <TestStep expected="Pass">
             <Name>step3</Name>
             <Action>
-               <Script>test/scripts/test.tcl</Script><Args>arg1 arg2 arg3</Args>
+                <Script>d:/test/test.tcl</Script><Args>arg1 arg2 arg3</Args>
             </Action>
             <Description />
         </TestStep>
