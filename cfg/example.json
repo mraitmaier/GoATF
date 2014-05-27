@@ -2,7 +2,7 @@
 "Description":"This is test set description.",
 "TestPlan":"",
 "SysUnderTest":{"Name":"SUT1","Systype":1,"Version":"1.0.0",
-"Description":"This is description.","IPaddr":"10.0.2.1"},
+"Description":"This is a SUT description.","IPaddr":"10.0.2.1"},
 "Setup":{"Script":"action1","Args":"arg1","Success":false,"Output":"","Description":"","Executable":true,"Manual":false},
 "Cleanup":{"Script":"action9","Args":"arg1","Success":false,"Output":"","Description":"","Executable":true,"Manual":false},
 "Cases":[{"Name":"testcase1",

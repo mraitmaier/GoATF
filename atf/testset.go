@@ -32,7 +32,7 @@ import (
 type TestSet struct {
 
 	// a test set name, of course; in XML, this is an attribute
-	Name string `xml:"name,attr"`
+	Name string
 
 	// a arbitrary long text description of the test set
 	Description string
@@ -41,7 +41,7 @@ type TestSet struct {
 	TestPlan string
 
 	// a system under test description
-	*SysUnderTest
+	Sut *SysUnderTest `xml:"SystemUnderTest"`
 
 	// a setup action
 	Setup *Action `xml:"Setup"`
@@ -50,7 +50,7 @@ type TestSet struct {
 	Cleanup *Action `xml:"Cleanup"`
 
 	// a list of test cases; in XML, this is a list of <TestCase> tags
-	Cases []TestCase `xml:"TestCase"`
+	Cases []TestCase `xml:"Cases>TestCase"`
 }
 
 /*
@@ -58,8 +58,9 @@ type TestSet struct {
  */
 func (ts *TestSet) String() string {
 	s := fmt.Sprintf("TestSet: %q", ts.Name)
-	s += fmt.Sprintf(" is owned by '%s' test plan.\n", ts.TestPlan)
-	s += fmt.Sprintf("  Description:\n'%s'\n", ts.Description)
+	s += fmt.Sprintf(" is owned by %q test plan.\n", ts.TestPlan)
+	s += fmt.Sprintf("  Description:\n%q\n", ts.Description)
+    s += fmt.Sprintf("  SUT:\n%q\n", ts.Sut.String())
 	if ts.Setup != nil {
 		s += fmt.Sprintf("  Setup: %s", ts.Setup.String())
 	} else {
@@ -80,7 +81,8 @@ func (ts *TestSet) String() string {
  * TestSet.Xml
  */
 func (ts *TestSet) Xml() string {
-	xml := fmt.Sprintf("<TestSet name=%q>\n", ts.Name)
+	xml := fmt.Sprintf("<TestSet>\n")
+    xml += fmt.Sprintf("<Name>%s</Name>\n", ts.Name)
 	if ts.Setup != nil {
 		xml += fmt.Sprintf("<Setup>\n%s</Setup>\n", ts.Setup.Xml())
 	} else {
@@ -205,7 +207,7 @@ func (ts *TestSet) Execute(display *ExecDisplayFnCback) {
 		_d("notice", fmt.Sprintln("Executing setup script"))
 		_d("info", FmtOutput(output))
 		// if setup script has failed, there's no need to proceed...
-		if ts.Setup.Status.Get() == "Fail" {
+		if ts.Setup.Status == "Fail" {
 			_d("error", ts.CleanupAfterTsetSetupFail())
 		}
 	} else {
@@ -232,11 +234,8 @@ func (ts *TestSet) Execute(display *ExecDisplayFnCback) {
  */
 const defCfgListCap = 10
 
-func CreateTestSet(name string,
-	descr string,
-	sut *SysUnderTest,
-	setup *Action,
-	cleanup *Action) *TestSet {
-	tcs := make([]TestCase, 0, defCfgListCap)
+func CreateTestSet(name, descr string, sut *SysUnderTest,
+	                                   setup, cleanup *Action) *TestSet {
+	tcs := make([]TestCase, 0)
 	return &TestSet{name, descr, "", sut, setup, cleanup, tcs}
 }

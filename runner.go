@@ -57,11 +57,13 @@ func (r *Runner) display(complete bool) {
 	fmt.Printf("(Optional) CCS file for HTML report: %q\n", r.cssfile)
 	fmt.Printf("Debug node enabled? %t\n", r.debug)
 	fmt.Printf("Parallel execution? %t\n", r.par)
+
 	// display loggers
 	fmt.Printf("Loggers (total # = %d):\n", r.logger.Len())
 	if r.logger != nil {
 		fmt.Println(r.logger.String())
 	}
+
 	// display test set
 	if r.tr != nil {
 		if complete {
@@ -83,14 +85,13 @@ func (r *Runner) display(complete bool) {
  * variable.
  */
 func (r *Runner) setWorkDir(basedir string, tsName string) {
-	var w = "results"
 	if basedir == "" {
 		if runtime.GOOS == "windows" {
 			basedir = os.Getenv("USERPROFILE")
 		} else {
 			basedir = os.Getenv("HOME")
 		}
-		basedir = path.Join(basedir, w,
+		basedir = path.Join(basedir, "goatf",
 			fmt.Sprintf("%s_%s", tsName, utils.NowFile()))
 	}
 	r.workdir = filepath.ToSlash(basedir)
@@ -101,18 +102,22 @@ func (r *Runner) setWorkDir(basedir string, tsName string) {
  * Parse the configuration file and create/update the appropriate data 
  * structures - first of all the TestSet.
  */
-func (r *Runner) collect() error {
+func (r *Runner) collect() (err error) {
+
 	var ts *atf.TestSet = new(atf.TestSet)
+    ts.Sut = new(atf.SysUnderTest)
+
 	if r.input != "" {
-		ts = atf.CollectTestSet(r.input)
+		ts = atf.Collect(r.input)
 	} else {
-		return errors.New("There's no configuration file defined")
+		return errors.New("There's no configuration file defined.")
 	}
+
 	if ts == nil {
-		return errors.New("Test set is empty")
+		return errors.New("Test set is empty.")
 	}
 	r.tr = atf.CreateTestReport(ts)
-	return nil
+	return
 }
 
 // Let's define the default levels for different log handlers:
@@ -231,15 +236,18 @@ func (r *Runner) Run() {
 		msg := params[1] // the second arg is logging message
 		r.logger.LogS(lvl, msg)
 	})
+
 	// execution begins...
 	r.tr.Started = utils.Now()
 	r.logger.Notice(fmt.Sprintf("     Started: %s\n", r.tr.Started))
+
 	// run test set only if it's not empty...
 	if r.tr.TestSet != nil {
 		r.logger.Notice(fmt.Sprintf("# Starting Test set: %q\n",
 						r.tr.TestSet.Name))
 		r.tr.TestSet.Execute(&fn) // we pass a ptr to defined closure
 	}
+
 	r.tr.Finished = utils.Now()
 	r.logger.Notice(fmt.Sprintf("# Test set: %q end.\n", r.tr.TestSet.Name))
 	r.logger.Notice(fmt.Sprintf("     Finished: %s\n", r.tr.Finished))

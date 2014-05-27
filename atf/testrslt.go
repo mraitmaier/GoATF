@@ -7,6 +7,10 @@
 
 package atf
 
+import (
+//    "encoding/xml"
+)
+
 /*
  * validTestResult - a slice of valid test result (string) values
  */
@@ -36,29 +40,44 @@ func IsValidTestResult(val string) bool {
 
 /*
  * TestResult - a struct hiding a string value for test result
- */
 type TestResult struct {
 	result string // this data is private
 }
+ */
+
+type TestResult string
+
+/*
+func (tr TestResult) UnmarshalXML(d *xml.Decoder, s xml.StartElement) error {
+
+    var data string
+    err := d.DecodeElement(&data, &s)
+    if err != nil {
+        return err
+    }
+    tr(data)
+    return nil
+}
+*/
 
 /*
  * TestResult.String - String method for TestResult is defined
- */
 func (tr *TestResult) String() string { return tr.result }
+ */
 
 /*
  * TestResult.Get - get a value of test result
- */
 func (tr *TestResult) Get() string { return tr.result }
+ */
 
 /*
  * TestResult.Set - set a value of test result
  */
-func (tr *TestResult) Set(val string) (err error) {
+func (tr TestResult) Set(val string) (err error) {
 	if IsValidTestResult(val) {
-		tr.result = val
+		tr = TestResult(val)
 	} else {
 		err = ATFError_Invalid_Test_Result
 	}
-	return err
+	return 
 }

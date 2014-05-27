@@ -165,8 +165,7 @@ func (a *Action) Execute() (output string) {
  * actions.
  */
 func CreateAction(script string, args string) *Action {
-	return &Action{script, args, TestResult{"UnknownResult"},
-		"", "", true, false}
+	return &Action{script, args, "UnknownResult", "", "", true, false}
 }
 
 /*****************************************************************************
@@ -178,7 +177,7 @@ func CreateAction(script string, args string) *Action {
  * Since this action is not executable, 'success' is always set.
  */
 func CreateManualAction(descr string) *Action {
-	return &Action{"", "", TestResult{"Pass"}, "", descr, false, true}
+	return &Action{"", "", "Pass", "", descr, false, true}
 }
 
 /*****************************************************************************
@@ -189,6 +188,5 @@ func CreateManualAction(descr string) *Action {
  * flags are reset, 'success' flag is set.
  */
 func CreateEmptyAction() *Action {
-	return &Action{"No action", "", TestResult{"Pass"}, "",
-		"No action", false, false}
+	return &Action{"No action", "", "Pass", "", "No action", false, false}
 }

@@ -27,7 +27,7 @@ import (
 type TestCase struct {
 
 	// a name of the test case; in XML, this is an attribute
-	Name string `xml:"name,attr"`
+	Name string
 
 	// a test case setup action
 	Setup *Action `xml:"Setup"`
@@ -44,7 +44,7 @@ type TestCase struct {
 	Status TestResult `xml:"status,attr"`
 
 	// a list of test steps; in XML, this is a sequence of <TestStep> tags
-	Steps []TestStep `xml:"TestStep"`
+	Steps []TestStep `xml:"Steps>TestStep"`
 
 	// a detailed description of the test case
 	Description string
@@ -81,7 +81,9 @@ func (tc *TestCase) String() string {
  * TestCase.Xml -
  */
 func (tc *TestCase) Xml() string {
-	s := "<TestCase>\n"
+	s := fmt.Sprintf("<TestCase expected=%q status=%q>\n",
+        tc.Expected, tc.Status)
+	s += fmt.Sprintf("<Name>%s</Name>\n", tc.Name)
 	s += fmt.Sprintf("<Description>%s</Description>\n", tc.Description)
 	if tc.Setup != nil {
 		s += fmt.Sprintf("<Setup>%s</Setup>\n", tc.Setup.Xml())
@@ -204,7 +206,7 @@ func (tc *TestCase) Execute(display *ExecDisplayFnCback) {
 		_d("notice", fmt.Sprintln("Executing case setup action"))
 		_d("info", FmtOutput(tc.Setup.Execute()))
 		// if setup action has failed, skip the rest of the case
-		if tc.Setup.Status.Get() == "Fail" {
+		if tc.Setup.Status == "Fail" {
 			_d("error", tc.cleanupAfterCaseSetupFail())
 		}
 	} else {
@@ -234,24 +236,24 @@ func (tc *TestCase) Execute(display *ExecDisplayFnCback) {
  * TestCase.evaluate - private method evaluating the test case status
  */
 func (tc *TestCase) evaluate() {
-	tc.Status = TestResult{"Pass"} // initial values is Pass
+	tc.Status = "Pass" // initial values is Pass
 	// if setup or cleanup have not Pass-ed, complete test case fails also 
 	//if tc.Setup.Status != Pass || tc.Cleanup.Status != Pass {
-	if tc.Setup.Status.Get() == "Fail" || tc.Cleanup.Status.Get() == "Fail" {
+	if tc.Setup.Status == "Fail" || tc.Cleanup.Status == "Fail" {
 		tc.Status.Set("Fail")
 		fmt.Println("DEBUG: setup or cleanup is not Pass") // DEBUG
 		return
 	}
 	// otherwise compare steps' expected and final results
 	for _, step := range tc.Steps {
-		switch tc.Expected.Get() {
+		switch tc.Expected {
 		case "Pass":
-			if step.Status.Get() != "Pass" {
+			if step.Status != "Pass" {
 				tc.Status.Set("Fail")
 				break
 			}
 		case "XFail":
-			if step.Status.Get() != "Fail" {
+			if step.Status != "Fail" {
 				tc.Status.Set("Fail")
 				break
 			}

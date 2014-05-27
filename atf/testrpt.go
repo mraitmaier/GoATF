@@ -38,7 +38,7 @@ type TestReport struct {
  * TestReport.String - string representation of the TestReport
  */
 func (tr *TestReport) String() string {
-	return fmt.Sprintf("TestReport %q\n\tstarted: %s\n\tfinished: %s\n",
+	return fmt.Sprintf("TestReport %q\nstarted: %s\nfinished: %s\n",
 		tr.TestSet.String(), tr.Started, tr.Finished)
 }
 
@@ -106,8 +106,8 @@ func (tr *TestReport) addHeader2Html() string {
 	html += fmt.Sprintf("<td>%s</td></tr>\n", tr.Finished)
 	html += fmt.Sprintln("</table>")
 	html += fmt.Sprintln("<p />")
-	if tr.TestSet.SysUnderTest != nil {
-		html += fmt.Sprintln(tr.addSut2Html(tr.TestSet.SysUnderTest))
+	if tr.TestSet.Sut != nil {
+		html += fmt.Sprintln(tr.addSut2Html(tr.TestSet.Sut))
 	}
 	html += fmt.Sprintln("<table>")
 	if tr.TestSet.Setup != nil {
@@ -175,6 +175,7 @@ func (tr *TestReport) addTestCase2Html(tc *TestCase) string {
  */
 func (tr *TestReport) addStep2Html(step *TestStep) string {
 	// let's see if step has passed and set the HTML class accordingly
+    fmt.Printf("DEBUG step: %s\n", step.String()) // DEBUG
 	class := resolveHtmlClass(step)
 	html := fmt.Sprintf("<tr><td>%s</td>", step.Name)
 	html += fmt.Sprintf("<td>%s</td><td>%s</td>",
@@ -193,13 +194,13 @@ func resolveHtmlClass(structure interface{}) (cls string) {
 	cls = ""
 	switch t := structure.(type) {
 	case *Action:
-		if t.Status.Get() == "Pass" {
+		if t.Status == "Pass" {
 			cls = "passed"
 		} else {
 			cls = "failed"
 		}
 	case *TestStep:
-		switch t.Status.Get() {
+		switch t.Status {
 		case "Pass":
 			cls = "passed"
 		case "Fail":

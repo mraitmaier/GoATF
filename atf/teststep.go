@@ -22,7 +22,7 @@ import (
 type TestStep struct {
 
 	/* name of the test step; in XML, this is an attribute */
-	Name string `xml:"name,attr"`
+	Name string
 
 	/* expected status of the step; in XML, this is an attribute */
 	Expected TestResult `xml:"expected,attr"`
@@ -31,7 +31,7 @@ type TestStep struct {
 	Status TestResult `xml:"status,attr"`
 
 	/* every test step needs an action: either manual or executable */
-	Action *Action
+	*Action `xml:"Action"`
 }
 
 /*
@@ -72,8 +72,9 @@ func (ts *TestStep) Display() string {
 func (ts *TestStep) Xml() string {
 	s := "<TestStep />\n"
 	if ts.Action != nil {
-		s = fmt.Sprintf("<TestStep name=%q expected=%q status=%q>",
-			ts.Name, ts.Expected, ts.Status)
+		s = fmt.Sprintf("<TestStep expected=%q status=%q>",
+			ts.Expected, ts.Status)
+        s += fmt.Sprintf("<Name>%s</Name>\n", ts.Name)
 		s += fmt.Sprintf("%s</TestStep>\n", ts.Action.Xml())
 	}
 	return s
@@ -113,15 +114,15 @@ func (ts *TestStep) Execute(display *ExecDisplayFnCback) {
 		_d("error", fmt.Sprintln("Action is EMPTY?????"))
 	}
 	// let's evaluate expectations and final status of the step
-	switch ts.Expected.Get() {
+	switch ts.Expected {
 	case "Pass":
-		if ts.Action.Status.Get() == "Pass" {
+		if ts.Action.Status == "Pass" {
 			ts.Status.Set("Pass")
 		} else {
 			ts.Status.Set("Fail")
 		}
 	case "XFail":
-		if ts.Action.Status.Get() == "Pass" {
+		if ts.Action.Status == "Pass" {
 			ts.Status.Set("Fail")
 		} else {
 			ts.Status.Set("Pass")
