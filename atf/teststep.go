@@ -31,7 +31,7 @@ type TestStep struct {
 	Status TestResult `xml:"status,attr"`
 
 	/* every test step needs an action: either manual or executable */
-	*Action `xml:"Action"`
+	Action *Action `xml:"Action"`
 }
 
 /*

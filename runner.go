@@ -105,7 +105,7 @@ func (r *Runner) setWorkDir(basedir string, tsName string) {
 func (r *Runner) collect() (err error) {
 
 	var ts *atf.TestSet = new(atf.TestSet)
-    ts.Sut = new(atf.SysUnderTest)
+    //ts.Sut = new(atf.SysUnderTest)
 
 	if r.input != "" {
 		ts = atf.Collect(r.input)
