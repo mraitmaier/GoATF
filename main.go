@@ -23,6 +23,7 @@ func parseArgs(r *Runner) {
 	flag.StringVar(&r.cssfile, "c", "cfg/report_def.css",
 		"custom CSS file for HTML report")
 	flag.BoolVar(&r.xml, "X", false, "create XML report (beside HTML report)")
+	flag.BoolVar(&r.json, "J", false, "create JSON report (beside HTML report)")
 	flag.BoolVar(&r.debug, "d", false,
 		"enable debug mode (for testing purposes)")
 	//

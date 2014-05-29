@@ -27,6 +27,7 @@ type Runner struct {
 	report  string
 	cssfile string
 	xml     bool       // create XML report (beside HTML report)
+	json    bool       // create JSON report (beside HTML report)
     par     bool       // run tests in parallel? (default: false) TODO
 	debug   bool       // enable debug mode (for testing purposes only)
 	logger  *utils.Log // a logger instance (
@@ -287,6 +288,7 @@ func (r *Runner) createXmlReport(filename string) error {
         return err
     }
 	x += trXml
+
     // write XML file
 	fout, err := os.OpenFile(filename, os.O_CREATE|os.O_WRONLY, 0755)
 	if err != nil {
@@ -295,6 +297,24 @@ func (r *Runner) createXmlReport(filename string) error {
 	defer fout.Close()
 	fmt.Fprint(fout, x)
 	return nil
+}
+
+func (r *Runner) createJsonReport(filename string) error {
+
+    json, err := r.tr.Json()
+    if err != nil {
+        return err
+    }
+
+    //
+    f, err := os.Create(filename)
+    if  err != nil {
+        return err
+    }
+    defer f.Close()
+
+    fmt.Fprint(f, json)
+    return nil
 }
 
 /*
@@ -341,6 +361,7 @@ func (r *Runner) CreateReports() {
 		return
 	}
 	r.logger.Notice(fmt.Sprintf("HTML report %q created.\n", filename))
+
 	// create XML report, if needed
 	if r.xml {
 		filename = filepath.ToSlash(path.Join(r.workdir, "report.xml"))
@@ -352,6 +373,18 @@ func (r *Runner) CreateReports() {
 		}
 		r.logger.Notice(fmt.Sprintf("XML report %q created.\n", filename))
 	}
+
+    // JSON report upon request
+    if r.json {
+		filename = filepath.ToSlash(path.Join(r.workdir, "report.json"))
+		err := r.createJsonReport(filename)
+		if err != nil {
+			r.logger.Error("JSON report could not be created.\n")
+			r.logger.Error(fmt.Sprintf("Reason: %s\n", err))
+			return
+		}
+		r.logger.Notice(fmt.Sprintf("JSON report %q created.\n", filename))
+    }
 }
 
 /*
