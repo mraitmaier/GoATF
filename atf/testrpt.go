@@ -38,7 +38,7 @@ type TestReport struct {
  * TestReport.String - string representation of the TestReport
  */
 func (tr *TestReport) String() string {
-	return fmt.Sprintf("TestReport %q\nstarted: %s\nfinished: %s\n",
+	return fmt.Sprintf("TestReport: %s\nstarted: %s\nfinished: %s\n",
 		tr.TestSet.String(), tr.Started, tr.Finished)
 }
 
@@ -48,20 +48,14 @@ func (tr *TestReport) String() string {
  */
 func (tr *TestReport) Name() string { return tr.TestSet.Name }
 
-/*
- * TestReport.Xml - create XML representation of the TestReport 
- */
+// Create an XML-encoded representation of the TestReport. 
 func (tr *TestReport) Xml() (x string, err error) {
 
-	x = ""
-	if tr.TestSet != nil {
-		b, err := xml.MarshalIndent(tr, "  ", "    ")
-		if err != nil {
-			return "", err
-		}
-		x = string(b[:])
+	b, err := xml.MarshalIndent(tr, "", "  ")
+	if err != nil {
+		return "", err
 	}
-	return
+	return string(b[:]), nil
 }
 
 /**************************************************************************
@@ -114,13 +108,13 @@ func (tr *TestReport) addHeader2Html() string {
 		html += fmt.Sprintf("<tr><td>Setup</td><td>%s</td>",
 			tr.TestSet.Setup.String())
 		html += fmt.Sprintf("<td class=%q>%s</td></tr>\n",
-			resolveHtmlClass(tr.TestSet.Setup), tr.TestSet.Setup.Status)
+			resolveHtmlClass(tr.TestSet.Setup), tr.TestSet.Setup.Result)
 	}
 	if tr.TestSet.Cleanup != nil {
 		html += fmt.Sprintf("<tr><td>Cleanup</td><td>%s</td>",
 			tr.TestSet.Cleanup.String())
 		html += fmt.Sprintf("<td class=%q>%s</td></tr>\n",
-			resolveHtmlClass(tr.TestSet.Cleanup), tr.TestSet.Cleanup.Status)
+			resolveHtmlClass(tr.TestSet.Cleanup), tr.TestSet.Cleanup.Result)
 	}
 	html += fmt.Sprintln("</table>")
 	html += fmt.Sprintln("</header>")
@@ -157,14 +151,14 @@ func (tr *TestReport) addTestCase2Html(tc *TestCase) string {
 	html += fmt.Sprintf("<tr><td>Setup</td><td>%s</td><td>Pass</td>",
 		tc.Setup.String())
 	html += fmt.Sprintf("<td class=%q>%s</td></tr>\n",
-		resolveHtmlClass(tc.Setup), tc.Setup.Status)
+		resolveHtmlClass(tc.Setup), tc.Setup.Result)
 	for _, step := range tc.Steps {
 		html += tr.addStep2Html(&step)
 	}
 	html += fmt.Sprintf("<tr><td>Cleanup</td><td>%s</td><td>Pass</td>",
 		tc.Cleanup.String())
 	html += fmt.Sprintf("<td class=%q>%s</td></tr>\n",
-		resolveHtmlClass(tc.Cleanup), tc.Cleanup.Status)
+		resolveHtmlClass(tc.Cleanup), tc.Cleanup.Result)
 	html += fmt.Sprintln("</table><p />")
 	html += "</article>\n"
 	return html
@@ -194,7 +188,7 @@ func resolveHtmlClass(structure interface{}) (cls string) {
 	cls = ""
 	switch t := structure.(type) {
 	case *Action:
-		if t.Status == "Pass" {
+		if t.Result == "Pass" {
 			cls = "passed"
 		} else {
 			cls = "failed"

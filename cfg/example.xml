@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<TestSet>
-    <Name>testset</Name>
+<TestSet name="testset">
     <TestPlan>A (still) non-existing test plan</TestPlan>
     <Description>This is a very detailed description of the test set.
     I think...</Description>
@@ -14,8 +13,7 @@
         <Description />
     </Cleanup>
 
-    <SystemUnderTest>
-        <Name>SUTname</Name>
+    <SystemUnderTest name="SUTname">
         <Version />
         <Type>Software</Type>
         <Description>A SUT description.</Description>
@@ -24,8 +22,7 @@
 
     <Cases>
 
-    <TestCase expected="Pass">
-        <Name>The First Test Case</Name>
+    <TestCase name="The First Test Case" expected="Pass">
         <Description>This is a test case description.</Description>
 
         <Setup>
@@ -33,31 +30,29 @@
             <Description /> 
         </Setup>
 
-        <TestSteps>
-        <TestStep expected="XFail">
-            <Name>step1</Name>
+        <Steps>
+        <TestStep name="step1" expected="XFail">
             <Action>
                 <Script>d:/test/test.py</Script> <Args>arg1</Args>
             </Action>
             <Description />
         </TestStep>
 
-        <TestStep expected="Pass" status="NotTested" >
-            <Name>step2</Name>
+        <TestStep name="step2" expected="Pass" status="NotTested" >
             <Action>
                 <Script>d:/test/test.pl</Script> <Args>arg1 arg2</Args>
             </Action>
             <Description />
         </TestStep>
 
-        <TestStep expected="Pass" status="Fail">
-            <Name>step3</Name>
+        <TestStep name="step3" expected="Pass" status="Fail">
             <Action>
                 <Script>d:/test/test.tcl</Script> <Args>arg1 arg2 arg3</Args>
             </Action>
             <Description>a step3 description</Description>
         </TestStep>
-        </TestSteps>
+
+        </Steps>
 
         <Cleanup>
             <Script>action0</Script> <Args></Args> <Description />
@@ -65,9 +60,7 @@
 
     </TestCase>
 
-    <TestCase>
-        <Name>The Second Test Case</Name>
-        <Expected>Pass</Expected>
+    <TestCase name="The Second Test Case" expected="Pass">
         <Description>This is case description.</Description>
 
         <Setup>
@@ -78,42 +71,36 @@
         </Setup>
 
         <Steps>
-        <TestStep expected="Pass" >
-            <Name>step4</Name>
+        <TestStep name="step4" expected="Pass">
             <Action><Script>d:/test/test.rb</Script><Args /></Action>
             <Description />
         </TestStep>
 
-        <TestStep expected="Pass" >
-            <Name>step5</Name>
+        <TestStep name="step5" expected="Pass" >
             <Action><Script>d:/test/test.groovy</Script><Args /></Action>
             <Description />
         </TestStep>
 
-        <TestStep expected="Pass" >
-            <Name>step6</Name>
+        <TestStep name="step6" expected="Pass" >
             <Action>
                 <Script>d:/test/hello.jar</Script><Args>arg1</Args>
             </Action>
             <Description />
         </TestStep>
 
-        <TestStep expected="Pass">
-            <Name>step7</Name>
+        <TestStep name="step7" expected="Pass">
             <Action>
                 <Script>d:/test/uname.exe</Script><Args>--help</Args>
             </Action>
             <Description />
         </TestStep>
 
-        <TestStep expected="Pass">
-            <Name>step8</Name>
+        <TestStep name="step8" expected="Pass">
             <Action><Script>d:/test/test.py</Script><Args></Args></Action>
             <Description />
         </TestStep>
 
-        <TestStep expected="Pass">
-            <Name>step9</Name>
+        <TestStep step="step9" expected="Pass">
             <Action>
                 <Script>d:/test/test.py</Script><Args>arg1</Args>
             </Action>
@@ -130,15 +117,13 @@
 
     </TestCase>
 
-    <TestCase expected="Pass" status="Pass">
-        <Name>The Third Test Case</Name>
+    <TestCase name="The Third Test Case" expected="Pass" status="Pass">
         <Description>This is case description.</Description>
 
         <Setup />
 
         <Steps>
-        <TestStep expected="Pass">
-            <Name>step0</Name>
+        <TestStep name="step0" expected="Pass">
             <Action><Script>action0</Script> <Args /></Action>
             <Description />
         </TestStep>
@@ -148,9 +133,7 @@
 
     </TestCase>
 
-    <TestCase>
-        <Name>The Fourth Test Case</Name>
-        <Expected>Pass</Expected>
+    <TestCase name="The Fourth Test Case" expected="XFail">
         <Description>This is case description.</Description>
 
         <Setup>
@@ -161,24 +144,21 @@
         </Setup>
 
         <Steps>
-        <TestStep expected="Pass">
-            <Name>step9</Name>
+        <TestStep name="step9" expected="Pass">
             <Action>
                 <Script>d:/test/test.py</Script> <Args>arg1</Args>
             </Action>
             <Description />
         </TestStep>
         
-        <TestStep expected="Pass">
-            <Name>step8</Name>
+        <TestStep name="step8" expected="Pass">
             <Action>
                 <Script>d:/test/test.py</Script> <Args>arg1 arg2</Args>
             </Action>
             <Description />
         </TestStep>
 
-        <TestStep expected="Pass">
-            <Name>step7</Name>
+        <TestStep name="step7" expected="Pass">
             <Action>
                 <Script>d:/test/uname.exe</Script> <Args>-a</Args>
             </Action>
@@ -190,38 +170,32 @@
 
     </TestCase>
 
-    <TestCase>
-        <Name>The Fifth Test Case</Name>
-        <Expected>XFail</Expected>
+    <TestCase name="The Fifth Test Case" expected="Pass">
         <Description>This is case description.</Description>
 
         <Setup />
 
         <Steps>
-        <TestStep expected="Pass">
-            <Name>step6</Name>
+        <TestStep name="step6" expected="Pass">
             <Action>
                 <Script>d:/test/hello.jar</Script> <Args>arg2 arg3 arg4</Args>
             </Action>
             <Description />
         </TestStep>
 
-        <TestStep expected="Pass">
-            <Name>step5</Name>
+        <TestStep name="step5" expected="Pass">
             <Action><Script>d:/test/test.groovy</Script><Args /></Action>
             <Description />
         </TestStep>
 
-        <TestStep expected="Pass">
-            <Name>step4</Name>
+        <TestStep name="step4" expected="Pass">
             <Action>
                 <Script>d:/test/test.rb</Script> <Args>arg1 arg2</Args>
             </Action>
             <Description />
         </TestStep>
 
-         <TestStep expected="Pass">
-            <Name>step3</Name>
+         <TestStep name="step3" expected="Pass">
             <Action>
                 <Script>d:/test/test.tcl</Script><Args>arg1 arg2 arg3</Args>
             </Action>

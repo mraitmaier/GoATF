@@ -50,6 +50,7 @@ func main() {
 	// now, run the damn thing....
 	r.Run()
 	//
+	//r.display(true) // DEBUG
 	r.CreateReports()
 	// close the logger
 	r.logger.Close()

@@ -10,35 +10,36 @@ package atf
 
 import (
 	"encoding/json"
+	"encoding/xml"
 	"fmt"
 )
 
-/*
- * SysUnderTest - structure representing System Under Test (SUT)
- */
+// Represents a system under test: this either peice of SW or HW or a system
+// built from both HW and SW. 
 type SysUnderTest struct {
 
-	Name        string `xml:"Name"`
+    // name of the SUT
+	Name        string `xml:"name,attr"`
 
+    // SUT System type: basically distinstion between HW and SW...
 	Systype     string `xml:"Type"`
 
+    // SUT version string (basically SUT HW or SW version)
 	Version     string `xml:"Version"`
 
+    // SUT description text
 	Description string `xml:"Description"`
 
+    // SUT IP address (if needed)
 	IPaddr      string `xml:"IPAddress"`
 }
 
-/*
- * SysUnderTest.CreateSUT - create an SUT structure
- */
+// Create a new SUT instance.
 func CreateSUT(name, systype, version, descr, ip string) *SysUnderTest {
 	return &SysUnderTest{name, systype, version, descr, ip}
 }
 
-/*
- * SysUnderTest.String - string representation of the SUT structure
- */
+// Returns a plain text representation of the SUT instance.
 func (s *SysUnderTest) String() string {
 	txt := "SystemUnderTest:\n"
 	txt += fmt.Sprintf("   Name: %s\n", s.Name)
@@ -51,7 +52,6 @@ func (s *SysUnderTest) String() string {
 
 /*
  * SysUnderTest.Xml - XML representation of the SUT structure
- */
 func (s *SysUnderTest) Xml() string {
 	xml := "<SystemUnderTest>\n"
 	xml += fmt.Sprintf("    <Name>%s</Name>\n", s.Name)
@@ -62,10 +62,19 @@ func (s *SysUnderTest) Xml() string {
 	xml += "</SystemUnderTest>\n"
 	return xml
 }
-
-/*
- * SysUnderTest.Json - JSON representation of the SUT structure
  */
+
+// Returns a XML-encoded representation of the SUT instance.
+func (s *SysUnderTest) Xml() (string, error) {
+
+    output, err := xml.MarshalIndent(s, "  ", "    ")
+    if err != nil {
+        return "", err
+    }
+    return string(output), nil
+}
+
+// Returns an JSON-encoded representation of the SUT instance.
 func (s *SysUnderTest) Json() (string, error) {
 	b, err := json.Marshal(s)
 	if err != nil {

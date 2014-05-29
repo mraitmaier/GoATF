@@ -252,6 +252,7 @@ func (r *Runner) Run() {
 	r.logger.Notice(fmt.Sprintf("# Test set: %q end.\n", r.tr.TestSet.Name))
 	r.logger.Notice(fmt.Sprintf("     Finished: %s\n", r.tr.Finished))
 	// This is the end of execution
+
 }
 
 /*

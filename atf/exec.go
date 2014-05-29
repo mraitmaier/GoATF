@@ -76,7 +76,7 @@ func FmtOutput(o string) string {
 }
 
 /*
- * _execute - private function that actually executes the given script/program
+ * execute - private function that actually executes the given script/program
  * and returns the output and/or error code. If everything goes well, 'err' is
  * 'nil'.
  *
@@ -90,22 +90,27 @@ func FmtOutput(o string) string {
  *      output - is the text output from the executed script/program
  *         err - error code; if everything is OK, it should be nil
  */
-func _execute(exe string, args []string) (output string, err error) {
+func execute(exe string, args []string) (output string, err error) {
+
+
 	output = ""
+    // simple error check
 	if len(exe) < 1 {
 		err = ATFError_Invalid_Value
-	} else {
-		var cmd *exec.Cmd
-		// let's execute the script
-		cmd = exec.Command(exe, args...)
-		if cmd == nil {
-			return output, err
-		}
-		var out []byte
-		out, _ = cmd.CombinedOutput()
-		output = string(out)
+        return
+    }
+
+	// prepare data for execution
+	cmd := exec.Command(exe, args...)
+	if cmd == nil {
+		return
 	}
-	return output, err
+
+    // run the command and wait for output text from STDIN and STDERR combined
+	var out []byte
+	out, err = cmd.CombinedOutput()
+	output = string(out)
+	return
 }
 
 /*
@@ -129,7 +134,7 @@ func executeJava(jar string, args []string) (out string, err error) {
 			realargs[ix+3] = val
 		} // for
 	} // if
-	out, err = _execute(javaExec, realargs)
+	out, err = execute(javaExec, realargs)
 	return out, err
 }
 
@@ -158,7 +163,7 @@ func executeScript(exe string, script string, args []string) (out string, err er
 			realargs[ix+2] = val
 		} // for
 	} // if
-	out, err = _execute(exe, realargs)
+	out, err = execute(exe, realargs)
 	return out, err
 }
 
@@ -232,7 +237,7 @@ func Execute(script string, args []string) (output string, err error) {
 		}
 		output, err = executeScript(expExec, script, args)
 	case NativeExecutable:
-		output, err = _execute(script, args)
+		output, err = execute(script, args)
 	case JavaExecutable:
 		output, err = executeJava(script, args)
 	case RubyScript:

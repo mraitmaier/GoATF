@@ -104,8 +104,9 @@ func Collect(pth string) (ts *TestSet) {
 		return nil
 	}
 
-	// now collect the test set structure
+	// now collect the test set structure and update flags for actions
 	c.collect(pth, ts)
+    ts.Normalize()
     // silently drop error: if 'ts' is 'nil', it is an error already...
 
 	return

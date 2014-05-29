@@ -8,7 +8,7 @@
 package atf
 
 import (
-//    "encoding/xml"
+    "encoding/xml"
 )
 
 /*
@@ -79,5 +79,16 @@ func (tr TestResult) Set(val string) (err error) {
 	} else {
 		err = ATFError_Invalid_Test_Result
 	}
-	return 
+	return
 }
+
+func (tr *TestResult) Xml() (x string, err error) {
+
+	x = ""
+	b, err := xml.MarshalIndent(tr, "", "  ")
+	if err != nil {
+		return "", err
+	}
+	return string(b[:]), nil
+}
+

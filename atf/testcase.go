@@ -8,32 +8,33 @@
  * itself according to expected result.
  *
  * History:
- *  0.1   Apr10 MR Initial version, limited testing
- *  0.2   Mar12 MR heavy refactoring: changed the Execute() method to work with
+ *  1   Apr10 MR Initial version, limited testing
+ *  2   Mar12 MR heavy refactoring: changed the Execute() method to work with
  *                 registered closure; xml.Unmarshal() parsing definitions; 
- *  0.3   Mar12 MR case evaluation fixed
+ *  3   Mar12 MR case evaluation fixed
+ *  4   May14 MR Improved and siplified version: XML handling simplified,
+ *               appending steps simplified.
  */
 
 package atf
 
 import (
 	"encoding/json"
+	"encoding/xml"
 	"fmt"
 )
 
-/*
- * TestCase -
- */
+// Represents a single test case.
 type TestCase struct {
 
 	// a name of the test case; in XML, this is an attribute
-	Name string
+	Name string         `xml:"name,attr"`
 
 	// a test case setup action
-	Setup *Action `xml:"Setup"`
+	Setup *Action       `xml:"Setup"`
 
 	// a test case cleanup action
-	Cleanup *Action `xml:"Cleanup"`
+	Cleanup *Action     `xml:"Cleanup"`
 
 	// expected result for this test case: either pass or expected fail;
 	// in XML, this is an attribute
@@ -41,18 +42,16 @@ type TestCase struct {
 
 	// actual result for this test case after execution;
 	// in XML, this is an attribute
-	Status TestResult `xml:"status,attr"`
+	Status TestResult   `xml:"status,attr"`
 
 	// a list of test steps; in XML, this is a sequence of <TestStep> tags
-	Steps []TestStep `xml:"Steps>TestStep"`
+	Steps []TestStep    `xml:"Steps>TestStep"`
 
 	// a detailed description of the test case
 	Description string
 }
 
-/*
- * TestCase.String 
- */
+// Returns a plain text representation of the TestSet instance.
 func (tc *TestCase) String() string {
 	s := fmt.Sprintf("Test Case: %q\n\tstatus: %s \n", tc.Name, tc.Status)
 	s += fmt.Sprintf("\tDescription: %q\n", tc.Description)
@@ -77,38 +76,41 @@ func (tc *TestCase) String() string {
 	return s
 }
 
-/*
- * TestCase.Xml -
- */
-func (tc *TestCase) Xml() string {
-	s := fmt.Sprintf("<TestCase expected=%q status=%q>\n",
-        tc.Expected, tc.Status)
-	s += fmt.Sprintf("<Name>%s</Name>\n", tc.Name)
-	s += fmt.Sprintf("<Description>%s</Description>\n", tc.Description)
-	if tc.Setup != nil {
-		s += fmt.Sprintf("<Setup>%s</Setup>\n", tc.Setup.Xml())
-	} else {
-		s += "<Setup />\n"
-	}
-	if tc.Steps != nil {
-		for _, step := range tc.Steps {
-			s += step.Xml()
-		}
-	} else {
-		s += "<Step />\n"
-	}
-	if tc.Cleanup != nil {
-		s += fmt.Sprintf("<Cleanup>%s</Cleanup>\n", tc.Cleanup.Xml())
-	} else {
-		s += "<Cleanup />\n"
-	}
-	s += "</TestCase>\n"
-	return s
+//
+func (tc *TestCase) Normalize() {
+
+    tc.Setup.UpdateFlags()
+    if !tc.Setup.IsManual() && !tc.Setup.IsExecutable() {
+        tc.Setup = nil
+    } else {
+        tc.Setup.Result = "NotTested"
+    }
+
+    //
+    tc.Cleanup.UpdateFlags()
+    if !tc.Cleanup.IsManual() && !tc.Cleanup.IsExecutable() {
+        tc.Cleanup = nil
+    } else {
+        tc.Cleanup.Result = "NotTested"
+    }
+
+    //
+    for _, step := range tc.Steps {
+        step.Normalize()
+    }
 }
 
-/*
- * Testcase.Json -
- */
+// Returns an XML-encoded representation of the TestSet instance.
+func (tc *TestCase) Xml() (string, error) {
+
+    output, err := xml.MarshalIndent(tc, "  ", "    ")
+    if err != nil {
+        return "", err
+    }
+    return string(output), nil
+}
+
+// Returns a JSON-encoded representation of the TestSet instance.
 func (tc *TestCase) Json() (string, error) {
 	b, err := json.Marshal(tc)
 	if err != nil {
@@ -117,104 +119,51 @@ func (tc *TestCase) Json() (string, error) {
 	return string(b[:]), err
 }
 
-/*
- * Testcase.Html -
- */
+// Returns an HTML-encoded representation of the TestSet instance.
 func (tc *TestCase) Html() (string, error) {
 	// TODO
 	return "", nil
 }
 
-/*
- * TestCase.findEmpty -
- */
-func (tc *TestCase) findEmpty() int {
-	for ix, step := range tc.Steps {
-		if step.Name == "" {
-			return ix
-		}
-	}
-	return -1
+// Append one or more test steps to a list of steps.
+func (tc *TestCase) Append(steps ...TestStep) {
+    tc.Steps = append(tc.Steps, steps...)
 }
 
-/*
- * AppendStep -
- */
-func (tc *TestCase) AppendStep(ts *TestStep) []TestStep {
-	if ts.Name != "" {
-		// first we check length of the steps' list
-		// if needed, we double the capacity
-		l := len(tc.Steps)
-		c := cap(tc.Steps)
-		if l+1 > c {
-			newlst := make([]TestStep, 2*c)
-			copy(newlst, tc.Steps)
-			tc.Steps = newlst
-		} // if l+1 > c
-		tc.Steps = tc.Steps[0 : l+1]
-		ix := tc.findEmpty()
-		// we do the insetion only if valid index was found
-		if ix != -1 {
-			tc.Steps[ix] = *ts
-		}
-	} else {
-		// WHAT TODO
-	}
-	return tc.Steps
-}
-
-/*
- * ExtendStepList -
- */
-func (tc *TestCase) ExtendStepList(lst []TestStep) []TestStep {
-	// first we check the capacity of the step list; if needed, double it
-	l := len(tc.Steps)
-	if l+len(lst) > cap(tc.Steps) {
-		newlst := make([]TestStep, cap(tc.Steps)+len(lst))
-		copy(newlst, lst)
-		tc.Steps = newlst
-	}
-	tc.Steps = tc.Steps[0 : l+len(lst)]
-	empty := tc.findEmpty()
-	if empty != -1 {
-		for ix, ts := range tc.Steps {
-			tc.Steps[empty+ix] = ts
-		}
-	}
-	return tc.Steps
-}
-
+// Cleanup data when execution of the setup action fails.
 func (tc *TestCase) cleanupAfterCaseSetupFail() string {
 	output := "Setup action has FAILED.\n"
 	output += "Skipping the rest of the case...\n"
 	output += fmt.Sprintf("<<< Leaving TestCase %q\n", tc.Name)
-	tc.Status.Set("Fail")
+	tc.Status = "Fail"
 	// set all steps' status to NotTested
 	for _, step := range tc.Steps {
-		step.Status.Set("NotTested")
+		step.Status = "NotTested"
 	}
 	return output
 }
 
+
+// Execute the entire TestCase.
 func (tc *TestCase) Execute(display *ExecDisplayFnCback) {
 
 	// we turn function ptr back to function
-	_d := *display
+	disp := *display
 
 	// and start with execution...
-	_d("notice", fmt.Sprintf(">>> Entering TestCase %q\n", tc.Name))
+	disp("notice", fmt.Sprintf(">>> Entering TestCase %q\n", tc.Name))
 
 	// let's execute setup action (if not empty)
 	if tc.Setup != nil {
-		_d("notice", fmt.Sprintf("Executing case setup action: %q\n",
+		disp("notice", fmt.Sprintf("Executing case setup action: %q\n",
                 tc.Setup.String()))
-		_d("info", FmtOutput(tc.Setup.Execute()))
+		disp("info", FmtOutput(tc.Setup.Execute()))
 		// if setup action has failed, skip the rest of the case
-		if tc.Setup.Status == "Fail" {
-			_d("error", tc.cleanupAfterCaseSetupFail())
+		if tc.Setup.Result == "Fail" {
+			disp("error", tc.cleanupAfterCaseSetupFail())
 		}
 	} else {
-		_d("notice", fmt.Sprintln("Setup action is not defined.\n"))
+		disp("notice", fmt.Sprintln("Setup action is not defined.\n"))
 	}
 
 	// now we execute the steps...
@@ -226,57 +175,110 @@ func (tc *TestCase) Execute(display *ExecDisplayFnCback) {
 
 	// let's execute cleanup action (if not empty)
 	if tc.Cleanup != nil {
-		_d("notice", fmt.Sprintf("Executing case cleanup action: %q\n",
+		disp("notice", fmt.Sprintf("Executing case cleanup action: %q\n",
                 tc.Cleanup.String()))
-		_d("info", FmtOutput(tc.Setup.Execute()))
+		disp("info", FmtOutput(tc.Setup.Execute()))
 	} else {
-		_d("notice", fmt.Sprintln("Cleanup action is not defined.\n"))
+		disp("notice", fmt.Sprintln("Cleanup action is not defined.\n"))
 	}
 	// now we evaluate the complete test case
 	tc.evaluate()
-	_d("notice", fmt.Sprintf("Test case evaluated to %q\n",
-		tc.Status))
-	_d("notice", fmt.Sprintf("<<< Leaving TestCase %q\n", tc.Name))
+	disp("notice", fmt.Sprintf("Test case evaluated to %q\n", tc.Status))
+	disp("notice", fmt.Sprintf("<<< Leaving TestCase %q\n", tc.Name))
 }
 
-/*
- * TestCase.evaluate - private method evaluating the test case status
- */
+// Evaluate results after the case was executed.
+// There is a simple algorithm how expected status and actual statuses are
+// treated. Expected status can be either Pass or XFail (expected fail).
+// According to expected status, test case is evaluated as follows:
+// - if setup action fails, the whole test case fails (steps are even not
+//   executed...). 
+// - if cleanup action fails, the whole test case fails.
+// - if expected status is Pass and any of the steps fails, the whole test case
+//   fails. Test case passes only if all actions pass (including setup and
+//   cleanup).
+// - if expected status is XFail and any of the steps passes, the whole test
+//   case is evaluated to Fail. Test case passes only if all actions fail.
+// - The NotTested status is treated neutral.
 func (tc *TestCase) evaluate() {
-	tc.Status = "Pass" // initial values is Pass
-	// if setup or cleanup have not Pass-ed, complete test case fails also 
-	//if tc.Setup.Status != Pass || tc.Cleanup.Status != Pass {
-	if tc.Setup.Status == "Fail" || tc.Cleanup.Status == "Fail" {
-		tc.Status.Set("Fail")
-		//fmt.Println("DEBUG: setup or cleanup is not Pass") // DEBUG
-		return
-	}
+
+	tc.Status = "Pass" // initial values is NotTested
+
 	// otherwise compare steps' expected and final results
-	for _, step := range tc.Steps {
-		switch tc.Expected {
-		case "Pass":
-			if step.Status != "Pass" {
-				tc.Status.Set("Fail")
-				break
-			}
-		case "XFail":
-			if step.Status != "Fail" {
-				tc.Status.Set("Fail")
-				break
-			}
-		default:
-			// by definition, only PASS & XFAIL are allowed as expected results 
-			tc.Status.Set("NotTested")
-		} /* switch */
-	} /* for */
+	switch tc.Expected {
+
+	case "Pass": tc.evaluateExpectedPass()
+
+	case "XFail": tc.evaluateExpectedFail()
+
+	default:
+		// by definition, only PASS & XFAIL are allowed as expected results 
+		tc.Status = "NotTested"
+
+	} // switch 
 }
 
-/*
- * CreateTestCase -
- */
-const defStepListCap = 10 /* default step list capacity */
-func CreateTestCase(name string, setup *Action, cleanup *Action,
-	expected TestResult, status TestResult, descr string) *TestCase {
-	steps := make([]TestStep, 0, defStepListCap)
+// Evaluate the test case status when expected status is XFail.
+func (tc *TestCase) evaluateExpectedFail() {
+
+	// if setup or cleanup have passed, the complete test case fails 
+	if tc.Setup.Result == "Pass" || tc.Cleanup.Result == "Pass" {
+	    tc.Status = "Fail"
+	    return
+	}
+
+    // If any of the steps passes, the whole test case fails.
+    not_tested := 0 // we count the NotTested occurences
+	for _, step := range tc.Steps {
+		switch step.Status {
+
+        case "Pass":
+			tc.Status = "Fail"
+			return
+
+        case "NotTested":
+            not_tested += 1
+		}
+	}
+
+    // If all steps' statuses are NotTested, the whole case is obviously 
+    // evaluated to NotTested.
+    if not_tested == len(tc.Steps) {
+        tc.Status = "NotTested"
+    }
+}
+
+// Evaluate the test case status when expected status is Pass.
+func (tc *TestCase) evaluateExpectedPass() {
+
+    // if setup or cleanup have not passed, the complete test case fails 
+    if tc.Setup.Result == "Fail" || tc.Cleanup.Result == "Fail" {
+	    tc.Status = "Fail"
+	    return
+    }
+
+    // If any of the steps fails, the whole test case fails.
+    not_tested := 0 // we count NotTested occurences
+	for _, step := range tc.Steps {
+		switch step.Status {
+        case "Fail":
+            tc.Status = "Fail"
+			return
+        case "NotTested":
+            not_tested += 1
+        }
+	}
+
+    // If all steps' statuses are NotTested, the whole case is obviously 
+    // evaluated to NotTested.
+    if not_tested == len(tc.Steps) {
+        tc.Status = "NotTested"
+    }
+}
+
+// Create a new instance of TestCase.
+func CreateTestCase(name, descr string, setup, cleanup *Action,
+	                expected, status TestResult) *TestCase {
+	steps := make([]TestStep, 0)
 	return &TestCase{name, setup, cleanup, expected, status, steps, descr}
 }

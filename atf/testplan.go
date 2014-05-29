@@ -2,66 +2,49 @@
  * testplan.go 
  *
  * History:
- *  0.1   May11 MR Initial version, limited testing
+ *  1   May11 MR Initial version, limited testing
+ *  2   May14 MR Updated version: XML handling simplified, added conversion to
+ *               TestSet, appending test cases simplified
  */
 
 package atf
 
 import (
 	"encoding/json"
+	"encoding/xml"
 	"fmt"
+    "bitbucket.org/miranr/goatf/atf/utils"
 )
 
-/*
- * TestPlan -
- */
+// Represents a test plan.
+// Note that the TestPlan has a sibling in TestSet type: TestSet is an
+// executable version of TestPlan.
 type TestPlan struct {
-	Name        string
-	Description string
-	Setup       *Action
-	Cleanup     *Action
-	Cases       []TestCase
+	Name        string      `xml:"name,attr"`
+	Description string      `xml:"Description"`
+	Setup       *Action     `xml:"Setup"`
+	Cleanup     *Action     `xml:"Cleanup"`
+	Cases       []TestCase  `xml:"Cases>TestCase"`
 }
 
-/*
- * TestPlan.String - function that creates the TestPlan struct
- */
+//  Returns a plan text representation of the TestPlan instance.
 func (tp *TestPlan) String() string {
 	s := fmt.Sprintf("TestPlan: %q\n", tp.Name)
 	return s
 }
 
-/*
- * TestPlan.Xml - function that creates the TestPlan struct
- */
-func (tp *TestPlan) Xml() string {
-	xml := fmt.Sprintf("<TestPlan name=%q\n", tp.Name)
-	if tp.Setup != nil {
-		xml += tp.Setup.Xml()
-	} else {
-		xml += "<Setup />\n"
-	}
-	if tp.Cases != nil {
+//  Returns a XML-encoded representation of the TestPlan instance.
+func (tp *TestPlan) Xml() (string, error) {
 
-		for _, tc := range tp.Cases {
-			xml += tc.Xml()
-		}
-		//xml += tp.Cases.Xml()
-	} else {
-		xml += "<TestCase />\n"
-	}
-	if tp.Cleanup != nil {
-		xml += tp.Cleanup.Xml()
-	} else {
-		xml += "<Cleanup />\n"
-	}
-	xml += fmt.Sprintln("</TestPlan>")
-	return xml
+    output, err := xml.MarshalIndent(tp, "  ", "    ")
+    if err != nil {
+        return "", err
+    }
+
+    return string(output), nil
 }
 
-/*
- * TestPlan.Json - function that 
- */
+//  Returns a JSON-encoded representation of the TestPlan instance.
 func (tp *TestPlan) Json() (string, error) {
 	b, err := json.Marshal(tp)
 	if err != nil {
@@ -70,22 +53,36 @@ func (tp *TestPlan) Json() (string, error) {
 	return string(b[:]), err
 }
 
-/*
- * CreateTestPlan - function that creates the TestPlan struct
- */
-const defTpListCap = 10
+// Append one or more test cases to the list of test cases.
+func (tp *TestPlan) Append (cases ...TestCase)  {
+    tp.Cases = append(tp.Cases, cases...)
+}
 
-func CreateTestPlan(name string,
-	descr string,
-	setup *Action,
-	cleanup *Action) *TestPlan {
-	tcs := make([]TestCase, 0, defTpListCap)
+// Convert a TestPlan into a TestSet instance.
+// Note that we force deep copy of data.
+func (tp *TestPlan) ToTestSet() *TestSet {
+
+    ts := new(TestSet)
+    ts.Name = utils.CopyS(tp.Name) // TestSet name can (and should) be changed
+    ts.Description = utils.CopyS(tp.Description)
+    ts.TestPlan = utils.CopyS(tp.Name)
+    *ts.Setup = *tp.Setup
+    *ts.Cleanup = *tp.Cleanup
+    ts.Sut = new(SysUnderTest) // return empty instance
+    copy(ts.Cases, tp.Cases)
+
+    return ts
+}
+
+// Creates a new TestPlan instance.
+func CreateTestPlan(name, descr string,
+	                setup, cleanup *Action) *TestPlan {
+	tcs := make([]TestCase, 0)
 	return &TestPlan{name, descr, setup, cleanup, tcs}
 }
 
 /*
  * TestPlan.findEmpty - function that creates the TestPlan struct
- */
 func (tp *TestPlan) findEmpty() int {
 	for ix, tc := range tp.Cases {
 		if &tc != nil && tc.Name == "" {
@@ -94,10 +91,10 @@ func (tp *TestPlan) findEmpty() int {
 	}
 	return -1
 }
+ */
 
 /*
  * TestPlan.AppendCase - function that 
- */
 func (tp *TestPlan) AppendCase(tc *TestCase) []TestCase {
 	if tc.Name != "" {
 		l := len(tp.Cases)
@@ -115,10 +112,10 @@ func (tp *TestPlan) AppendCase(tc *TestCase) []TestCase {
 	}
 	return tp.Cases
 }
+ */
 
 /*
  * TestPlan.ExtendCaseList - function that extends tha list of test cases
- */
 func (tp *TestPlan) ExtendCaseList(tcl []TestCase) []TestCase {
 	l := len(tp.Cases)
 	if l+len(tcl) > cap(tp.Cases) {
@@ -135,3 +132,4 @@ func (tp *TestPlan) ExtendCaseList(tcl []TestCase) []TestCase {
 	}
 	return tp.Cases
 }
+*/
