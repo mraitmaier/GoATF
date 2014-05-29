@@ -1,11 +1,8 @@
 /*
- * user.go  - implemetation of the User type
- *
- * This data struct should be used for user authorization. Once the web
- * application is done...
+ * user.go 
  *
  * History:
- *  0.1   Jun11 MR Initial version, limited testing
+ *  1   Jun11 MR Initial version, limited testing
  */
 
 package atf
@@ -17,101 +14,67 @@ import (
 )
 
 /*
- * Role - type (enum) defining user roles
- */
-type Role int
-
-const (
-	UnknownRole Role = iota
-	GuestRole
-	UserRole
-	TesterRole
-	DeveloperRole
-	ManagerRole
-	AdminRole
-)
-
-/*
- * Role.String - a method returning string representation of the Role value
- */
-func (r Role) String() string {
-	switch r {
-	case AdminRole:
-		return "Admin"
-	case UserRole:
-		return "User"
-	case TesterRole:
-		return "Tester"
-	case DeveloperRole:
-		return "Developer"
-	case ManagerRole:
-		return "Manager"
-	case GuestRole:
-		return "Guest"
-	}
-	return "Unknown Role"
-}
-
-/*
- * RoleValue - a function that converts the string value into Role value
- */
-func RoleValue(s string) Role {
-	switch strings.ToLower(s) {
-	case "admin", "administrator":
-		return AdminRole
-	case "manager":
-		return ManagerRole
-	case "developer":
-		return DeveloperRole
-	case "tester":
-		return TesterRole
-	case "user":
-		return UserRole
-	case "guest":
-		return GuestRole
-	}
-	return UnknownRole
-}
-
-/*
  * User
  */
 type User struct {
 	Username  string // username 
-	*Password        // password (is hidden so it can be hashed always) 
-	Hint      string // password hint
+	Password  string // password (should always be hashed, use CreateUser()! ) 
 	Name      string // full name
-	Role      Role   // user role (guest, user, admin)
+    Role      string // user role, limited to (guest, user, admin)
 	Email     string // e-mail address
 }
 
-/*
- * User.String - return string representation of the User
- */
+// A list of allowed user roles
+var AllowedRoles = []string{"admin", "user", "guest"}
+
+// String representation of the User 
 func (u *User) String() (s string) {
-	s = fmt.Sprintf("%s [%s]: %s %q", u.Username, u.Email,
-		u.Password.Get(), u.Role.String())
+	s = fmt.Sprintf("%s [%s]: %s %q", u.Username, u.Email, u.Password, u.Role)
 	return s
 }
 
-/*
- * User.Json - convert a user into JSON representation
- */
+// Convert a User into JSON representation
 func (u *User) Json() (string, error) {
 	b, err := json.Marshal(u)
 	if err != nil {
-		return "", err
+		return "JSON marshal error - User", err
 	}
 	return string(b[:]), err
 }
 
-/*
- * CreateUser - create a user with username and password 
- *
- * Username and password are the mandatory parameters to create a new user.
- */
+// Handle roles for users, since this is a bit tricky, we don't allowed direct
+// management of roles, but via method that automates procedure and does some
+// basic error checking.
+func (u *User) SetRole(role string) error {
+
+    role = strings.ToLower(role)
+
+    if role == "administrator" { role = "admin" }
+
+    for _, r := range AllowedRoles {
+        if role == r {
+            u.Role = role
+            return nil
+        }
+    }
+    return fmt.Errorf("User role value not valid.")
+}
+
+// Create a new user with username, password and role as mandatory information.
+// This one is used to create a non-existing user (in some sort of DB), so role
+// is a vital information about the user.
+func CreateNewUser(username, password, role string) (*User, error) {
+	p := new(Password)
+	p.Set(password)
+    u := &User{username, p.Get(), "", "user", ""}
+    if err := u.SetRole(role); err != nil { return nil, err }
+	return u, nil
+}
+
+// Create a user with username and password. This one is used to authenticate
+// the existing user (role is stored in some DB...)
 func CreateUser(username, password string) *User {
 	p := new(Password)
 	p.Set(password)
-	return &User{username, p, "", "", UnknownRole, ""}
+    return &User{username, p.Get(), "", "user", ""}
 }

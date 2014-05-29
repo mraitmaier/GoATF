@@ -52,3 +52,24 @@ func (p *Password) Cmp(toCompare string) bool {
     return status
 }
 
+// Hash a plain-text password using bcrypt
+func HashPassword(passwd string) (string) {
+
+    p, err := bcrypt.GenerateFromPassword([]byte(passwd), 0)
+
+    // If error: this is very serious, just PANIC!
+    if err != nil {
+        panic("Cannot hash password using bcrypt.")
+    }
+    return string(p)
+}
+
+
+func ComparePasswords(hashed, plain string) bool {
+    status := false
+    err := bcrypt.CompareHashAndPassword([]byte(hashed), []byte(plain))
+    if err == nil {
+        status = true // success
+    }
+    return status
+}
