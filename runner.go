@@ -39,7 +39,7 @@ type Runner struct {
  */
 func NewRunner() *Runner {
 	var r = new(Runner)
-	r.logger = utils.NewLog(numOfLoggers)
+	r.logger = utils.NewLog()
     r.par = false // run sequentially by default
 	return r
 }
@@ -60,7 +60,7 @@ func (r *Runner) display(complete bool) {
 	fmt.Printf("Parallel execution? %t\n", r.par)
 
 	// display loggers
-	fmt.Printf("Loggers (total # = %d):\n", r.logger.Len())
+	fmt.Printf("Loggers:\n")
 	if r.logger != nil {
 		fmt.Println(r.logger.String())
 	}
@@ -126,13 +126,13 @@ func (r *Runner) collect() (err error) {
 // important printous, while syslog handler should omit sending the execution
 // outputs. 
 const (
-	defSyslogLevel utils.LogLevel = utils.NoticeLogLevel
-	defFileLevel   utils.LogLevel = utils.InfoLogLevel
-	defStreamLevel utils.LogLevel = utils.NoticeLogLevel
+	defSyslogLevel utils.Severity = utils.Notice
+	defFileLevel   utils.Severity = utils.Informational
+	defStreamLevel utils.Severity = utils.Notice
 )
 
 // the max number of loggers used here (console, file & syslog)
-const numOfLoggers int = 3
+//const numOfLoggers int = 3
 
 /*
  * Runner.createLog -
@@ -158,6 +158,8 @@ func (r *Runner) createLog() error {
 	if err != nil {
 		return err
 	}
+    r.logger.Start()
+
 	// if logger is created, this message should print...
 	r.logger.Warning("Log successfully created\n")
 	//    r.logger.Notice("Displaying Runner configuration:")
@@ -173,8 +175,8 @@ func (r *Runner) createLoggers(format string, debug bool) error {
 	fLevel := defFileLevel   // this is level for file handler
 	sLevel := defSyslogLevel // this is level for syslog & console handlers
 	if debug {
-		fLevel = utils.DebugLogLevel
-		sLevel = utils.DebugLogLevel
+		fLevel = utils.Debug
+		sLevel = utils.Debug
 	}
 	// now create file logger
 	f, err := utils.NewFileHandler(r.logfile, format, fLevel)
