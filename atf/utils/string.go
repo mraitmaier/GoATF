@@ -33,6 +33,5 @@ func CopyS(s string) string {
     b := []byte("")
     copy(b, a)
     return string(b)
-
 }
 

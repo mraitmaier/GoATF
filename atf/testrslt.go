@@ -14,14 +14,8 @@ import (
 /*
  * validTestResult - a slice of valid test result (string) values
  */
-var validTestResults = []string{"UnknownResult", "Pass", "Fail",
+var ValidTestResults = []string{"UnknownResult", "Pass", "Fail",
 	"XFail", "NotTested"}
-
-/*
- * ValidTestResult - a function that returns the slice of valid test result
- * values; we use a function to publicly make this slice a constant
- */
-func ValidTestResults() []string { return validTestResults }
 
 /*
  * IsValidTestResult - a function that checks the validity of the test result
@@ -29,7 +23,7 @@ func ValidTestResults() []string { return validTestResults }
  */
 func IsValidTestResult(val string) bool {
 	status := false
-	for _, v := range validTestResults {
+	for _, v := range ValidTestResults {
 		if v == val {
 			status = true
 			break
@@ -38,15 +32,7 @@ func IsValidTestResult(val string) bool {
 	return status
 }
 
-/*
- * TestResult - a struct hiding a string value for test result
-type TestResult struct {
-	result string // this data is private
-}
- */
-
 type TestResult string
-
 /*
 func (tr TestResult) UnmarshalXML(d *xml.Decoder, s xml.StartElement) error {
 
@@ -72,7 +58,6 @@ func (tr *TestResult) Get() string { return tr.result }
 
 /*
  * TestResult.Set - set a value of test result
- */
 func (tr TestResult) Set(val string) (err error) {
 	if IsValidTestResult(val) {
 		tr = TestResult(val)
@@ -81,6 +66,7 @@ func (tr TestResult) Set(val string) (err error) {
 	}
 	return
 }
+ */
 
 func (tr *TestResult) Xml() (x string, err error) {
 
