@@ -7,9 +7,7 @@ import (
 	"strings"
 )
 
-/*****************************************************************************
- * actioner interface
- */
+// actioner interface
 type Actioner interface {
 	IsExecutable() bool /* is action executable? */
 	IsManual() bool     /* is action Manual? */
@@ -27,26 +25,25 @@ type Actioner interface {
 // empty action. Note that both flags must NOT be set. 
 type Action struct {
 
-	/* script to be executed */
+	// script to be executed
 	Script string
 
-	/* arguments to script (if needed) */
+	// arguments to script (if needed)
 	Args string
 
-	/* script execution success */
-	//Status TestResult `xml:"status,attr"`
+	// script execution success
 	Result TestResult `xml:"result,attr"`
 
-	/* script execution output text */
+	// script execution output text
 	Output string
 
-	/* description text, used mainly for manual actions */
+	// description text, used mainly for manual actions
 	Description string
 
-	/* is this action executable? */
+	// is this action executable?
 	executable bool `xml:"executable,attr"`
 
-	/* is this action manual? */
+	// is this action manual?
 	manual bool `xml:"manual,attr"`
 }
 

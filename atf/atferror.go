@@ -4,12 +4,7 @@
 
 package atf
 
-/*
- * AtfError - An enum defining custom error values
- *
- * Of course, it implements the standard 'error' interface by providing the
- * Error() method. 
- */
+// An enum defining custom error values
 type AtfError int
 
 const (

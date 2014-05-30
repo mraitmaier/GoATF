@@ -6,7 +6,8 @@
  * as simple as possible.
  *
  * History:
- *  0.1   Apr10 MR Initial version, limited testing
+ *  1   Apr10 MR Initial version, limited testing
+ *  2   May14 MR Improved version, action and status handling is now accurate.
  */
 
 package atf
@@ -17,9 +18,7 @@ import (
 	"fmt"
 )
 
-/*
- * TestStep
- */
+// Represents a single test step (action with additional data).
 type TestStep struct {
 
 	/* name of the test step; in XML, this is an attribute */
@@ -35,9 +34,7 @@ type TestStep struct {
 	Action *Action      `xml:"Action"`
 }
 
-/*
- * TestStep.String 
- */
+// Returns a string representation of the TestStep instance.
 func (ts *TestStep) String() string {
 
 	var act string
@@ -53,9 +50,7 @@ func (ts *TestStep) String() string {
 		ts.Name, ts.Expected, ts.Status, act)
 }
 
-/*
- * TestStep.Display
- */
+// Displays a TestStep. Meant mainly for testing & debugging purposes.
 func (ts *TestStep) Display() string {
 	txt := fmt.Sprintf("TestStep: %q\n", ts.Name)
 	txt += fmt.Sprintf("Expected status: %q\n", ts.Expected)
@@ -94,23 +89,27 @@ func (ts *TestStep) Html() (string, error) {
 	return "", nil
 }
 
-//  Tidy up action: check flags; if both flags are false, just clear the action.
-func (ts *TestStep) Normalize() {
+// Initialize the test step.
+// Note that when step's action is empty, the method will panic (this is
+// unacceptable condition!).
+func (ts *TestStep) Initialize() {
+
+    // if action is empty, just panic, this is not acceptable...
+    if ts.Action == nil {
+        panic("Test step action is empty!")
+    }
     ts.Action.Init()
-    if !ts.Action.IsManual() && !ts.Action.IsExecutable() {
-        ts.Action = nil
-    } else {
-        ts.Action.Result = "NotTested"
-        // if expected status is empty for executable action, force "Pass"
-        if ts.Action.IsExecutable() && ts.Expected == "" {
-            ts.Expected = "Pass"
-        }
+
+    // default step status is "not tested"
+    ts.Status = "NotTested"
+
+    // if expected status is empty for executable action, force "Pass"
+    if ts.Action.IsExecutable() && ts.Expected == "" {
+        ts.Expected = "Pass"
     }
 }
 
-/*
- * TestStep.Execute
- */
+// Execute the TestStep.
 func (ts *TestStep) Execute(display *ExecDisplayFnCback) {
 
 	// we turn the function ptr back to function 
@@ -150,9 +149,7 @@ func (ts *TestStep) Execute(display *ExecDisplayFnCback) {
     disp("info", fmt.Sprintf("<<< Leaving test step %q\n", ts.Name))
 }
 
-/*
- * CreateTestStep
- */
+// Create a new TestStep instance.
 func CreateTestStep(name string, descr string, expected TestResult,
 	status TestResult, act *Action) *TestStep {
 	return &TestStep{name, expected, status, act}

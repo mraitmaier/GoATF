@@ -31,13 +31,12 @@ import (
  */
 type ExecDisplayFnCback func(...string)
 
-/*
- * Executor interface defining the Execute() method
- */
+// Executor interface defining the Execute() method
 type Executor interface {
 	Execute(ExecDisplayFnCback) string
 }
 
+// String constants defining different script/program executors
 const (
 	pyExec     = "python"
 	plExec     = "perl"
@@ -48,9 +47,8 @@ const (
 	groovyExec = "groovy"
 )
 
-/* let's define some executable types as enum */
+// Define some executable types as enum
 type ScriptType int
-
 const (
 	UnknownScript ScriptType = iota
 	PythonScript
@@ -64,10 +62,7 @@ const (
 	GroovyScript
 )
 
-/*
- * FmtOutput - a public helper function that formats the output text of the
- *             executed script/program
- */
+// Formats the output text from script/program.
 func FmtOutput(o string) string {
 	s := "Displaying output:\n################### OUTPUT ##################\n"
 	s += o
@@ -75,21 +70,18 @@ func FmtOutput(o string) string {
 	return s
 }
 
-/*
- * execute - private function that actually executes the given script/program
- * and returns the output and/or error code. If everything goes well, 'err' is
- * 'nil'.
- *
- * Input:
- *       exe - an interpreter for given script or program to be executed
- *      args - arguments to the interpreter as slice of string; the script 
- *          name is always included, of course. Any additional argument are to
- *          be a part of this slice.
- *
- * Returns:
- *      output - is the text output from the executed script/program
- *         err - error code; if everything is OK, it should be nil
- */
+// Private function that actually executes the given script/program
+// and returns the output and/or error code.
+//
+// Input:
+//       exe - an interpreter for given script or program to be executed
+//      args - arguments to the interpreter as slice of string; the script 
+//          name is always included, of course. Any additional argument are to
+//          be a part of this slice.
+//
+// eturns:
+//      output - is the text output from the executed script/program
+//         err - error code; if everything is OK, it should be nil
 func execute(exe string, args []string) (output string, err error) {
 
 
@@ -113,18 +105,15 @@ func execute(exe string, args []string) (output string, err error) {
 	return
 }
 
-/*
- * executeJava - a private function that prepares arguments for executing the
- *               java programs packaged as JARs   
- *
- * Input:
- *      jar  - a java JAR to be run 
- *      args - additional arguments for the JAR as a slice of strings
- *
- * Returns:
- *      out - is the text output from the executed script/program
- *      err - error code; if everything is OK, it should be nil
- */
+// A private function that prepares arguments for executing the JARs.   
+//
+// Input:
+//      jar  - a java JAR to be run 
+//      args - additional arguments for the JAR as a slice of strings
+//
+// Returns:
+//      out - is the text output from the executed script/program
+//      err - error code; if everything is OK, it should be nil
 func executeJava(jar string, args []string) (out string, err error) {
 	realargs := make([]string, len(args)+3)
 	realargs[0] = "-jar"
@@ -138,21 +127,17 @@ func executeJava(jar string, args []string) (out string, err error) {
 	return out, err
 }
 
-/*
- * executeScript - a private function that prepares arguments for executing the
- *               various scripts
- * 
- * Script interpretter must be in PATH.
- *
- * Input:
- *      exe - an executable that'll run the script (interpreter)
- *      script  - a python script to be run 
- *      args - additional arguments for the script as a slice of strings
- *
- * Returns:
- *      out - is the text output from the executed script/program
- *      err - error code; if everything is OK, it should be nil
- */
+// A private function that prepares arguments for executing the various scripts
+// Script interpretter must be in PATH.
+//
+// Input:
+//      exe - an executable that'll run the script (interpreter)
+//      script  - a python script to be run 
+//      args - additional arguments for the script as a slice of strings
+// 
+// Returns:
+//      out - is the text output from the executed script/program
+//      err - error code; if everything is OK, it should be nil
 func executeScript(exe string, script string, args []string) (out string, err error) {
 	// we need to insert an empty string before our args for python script to
 	// run properly
@@ -167,18 +152,15 @@ func executeScript(exe string, script string, args []string) (out string, err er
 	return out, err
 }
 
-/*
- * determineType - a private function that determines the type of script to be
- *              executed. This is done by examining the file extension. If
- *              extension is not found (is empty string), the file is
- *              considered a native executable (true for POSIX OSes).
- *
- * Input:
- *      scr  - a file whose type is to be determined
- *
- * Returns:
- *      a type of the script/program
- */
+// A private function that determines the type of script to be executed. This 
+// is done by examining the file extension. If extension is not found (is empty
+// string), the file is considered a native executable (true for POSIX OSes).
+// 
+// Input:
+//      scr  - a file whose type is to be determined
+//
+// Returns:
+//      a type of the script/program
 func determineType(scr string) ScriptType {
 	var t ScriptType
 	e := path.Ext(scr)
@@ -205,19 +187,16 @@ func determineType(scr string) ScriptType {
 	return t
 }
 
-/*
- * Execute - the (only) public function in this module. It executes the given
- * script/program and returns the text output of the command (STDOUT & STDERR)
- * and error code if something goes wrong.
- * 
- * Input:
- *      script - a python script to be run 
- *        args - additional arguments for the script as a slice of strings
- *
- * Returns:
- *      output - is the text output from the executed script/program
- *         err - error code; if everything is OK, it should be nil
- */
+// Executes the given script/program and returns the text output of the command
+// (STDOUT & STDERR) and error code if something goes wrong.
+// 
+// Input:
+//      script - a python script to be run 
+//        args - additional arguments for the script as a slice of strings
+// 
+// Returns:
+//      output - is the text output from the executed script/program
+//         err - error code; if everything is OK, it should be nil
 func Execute(script string, args []string) (output string, err error) {
 	var scrtype ScriptType
 	scrtype = determineType(script)

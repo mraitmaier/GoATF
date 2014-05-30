@@ -50,20 +50,6 @@ func (s *SysUnderTest) String() string {
 	return txt
 }
 
-/*
- * SysUnderTest.Xml - XML representation of the SUT structure
-func (s *SysUnderTest) Xml() string {
-	xml := "<SystemUnderTest>\n"
-	xml += fmt.Sprintf("    <Name>%s</Name>\n", s.Name)
-	xml += fmt.Sprintf("    <Type>%s</Type>\n", s.Systype)
-	xml += fmt.Sprintf("    <Version>%s</Version>\n", s.Version)
-	xml += fmt.Sprintf("    <IP>%s</IP>\n", s.IPaddr)
-	xml += fmt.Sprintf("    <Description>%s</Description>\n", s.Description)
-	xml += "</SystemUnderTest>\n"
-	return xml
-}
- */
-
 // Returns a XML-encoded representation of the SUT instance.
 func (s *SysUnderTest) Xml() (string, error) {
 

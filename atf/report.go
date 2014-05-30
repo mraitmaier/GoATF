@@ -21,51 +21,37 @@ import (
 	"bitbucket.org/miranr/goatf/atf/utils"
 )
 
+// Defined the interface for different report generators.
 type Reporter interface {
 	Create(tr *TestReport) (string, error)
 }
 
-/*
- * Report - a report structure to rule them all...
- *
- * It wraps all types of reports that ATF is aware of and defines the
- * operations on all of those reports.
- */
+// A report structure to rule them all...
+// It wraps all types of reports that ATF is aware of and defines the
+// operations on all of those reports.
 type Report struct {
 	reports map[string]string
 }
 
-/****************************************************************************
- * CreateReport - create empty report structure 
- */
+// Create an empty report structure 
 func CreateReport() *Report {
 	var rpt = make(map[string]string)
 	return &Report{rpt}
 }
 
-/****************************************************************************
- * Report.AddHtml - add a reference to HTML report 
- */
+// Add a reference to HTML report 
 func (r *Report) AddHtml() { r.reports["html"] = "" }
 
-/****************************************************************************
- * Report.AddXml - add a reference to XML report 
- */
+// Add a reference to XML report 
 func (r *Report) AddXml() { r.reports["xml"] = "" }
 
-/****************************************************************************
- * Report.AddText - add a reference to text report 
- */
+// Add a reference to text report 
 func (r *Report) AddJson() { r.reports["json"] = "" }
 
-/****************************************************************************
- * Report.AddJson - add a reference to JSON report 
- */
+// Add a reference to JSON report 
 func (r *Report) AddText() { r.reports["txt"] = "" }
 
-/****************************************************************************
- * Report.create - private method that creates the report with given type 
- */
+// Private method that creates the report with given type.
 func (r *Report) create(tr *TestReport, typ string) (rpt string, err error) {
 	switch typ {
 	case "html":
@@ -82,9 +68,7 @@ func (r *Report) create(tr *TestReport, typ string) (rpt string, err error) {
 	return
 }
 
-/****************************************************************************
- * Report.Create - create all the defined reports and write them
- */
+// Create all the defined reports and write them
 func (r *Report) Create(tr *TestReport, pth string) (err error) {
 	// if path is empty, create the default path
 	if pth == "" {

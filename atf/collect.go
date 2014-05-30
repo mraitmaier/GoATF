@@ -26,19 +26,16 @@ import (
 	"bitbucket.org/miranr/goatf/atf/utils"
 )
 
-/****************************************************************************
- * Collector interface - defines the types that implement Collect() method
- */
+// Defines the types that implement Collect() method.
 type Collector interface {
-	collect(pth string, ts *TestSet) error
+	Collect(pth string, ts *TestSet) error
 }
 
-/****************************************************************************
- * JsonCollector - defines the JSON collector
- */
+// Defines the JSON collector type.
 type JsonCollector string
 
-func (c *JsonCollector) collect(pth string, ts *TestSet) error {
+// Implementation of the collector interface.
+func (c *JsonCollector) Collect(pth string, ts *TestSet) error {
 
 	text, err := utils.ReadTextFile(pth)
 	if err != nil && err != io.EOF {
@@ -49,12 +46,11 @@ func (c *JsonCollector) collect(pth string, ts *TestSet) error {
 	return err
 }
 
-/****************************************************************************
- * XmlCollector - defines the
- */
+// Defines the XML collector type.
 type XmlCollector string
 
-func (c *XmlCollector) collect(pth string, ts *TestSet) error {
+// Implementation of the collector interface.
+func (c *XmlCollector) Collect(pth string, ts *TestSet) error {
 
 	// read the XMl file
 	text, err := utils.ReadTextFile(pth)
@@ -66,20 +62,19 @@ func (c *XmlCollector) collect(pth string, ts *TestSet) error {
 	return err
 }
 
-/****************************************************************************
- * TextCollector - defines the 
- */
+// Defines the plain text collector type.
 type TextCollector string
 
-func (c *TextCollector) collect(pth string, ts *TestSet) error {
+// Implementation of the collector interface.
+func (c *TextCollector) Collect(pth string, ts *TestSet) error {
 
 	// FIXME: no implementation yet, returning empty pointer
 	return nil
 }
 
-/*****************************************************************************
- * CollectTestSet - function that creates the TestSet struct
- */
+// Public factory function that resolves the right collector type and reads the
+// config. The final result is the valid TestSet structure, ready to be
+// executed.
 func Collect(pth string) (ts *TestSet) {
 
 	// let's create empty TestSet
@@ -105,8 +100,8 @@ func Collect(pth string) (ts *TestSet) {
 	}
 
 	// now collect the test set structure and update flags for actions
-	c.collect(pth, ts)
-    ts.Normalize()
+	c.Collect(pth, ts)
+    ts.Initialize()
     // silently drop error: if 'ts' is 'nil', it is an error already...
 
 	return

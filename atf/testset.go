@@ -64,7 +64,6 @@ func (ts *TestSet) ToTestPlan() *TestPlan {
     tp.Description = utils.CopyS(ts.Description)
     *tp.Setup = *ts.Setup
     *tp.Cleanup = *ts.Cleanup
-    //copy(tp.Cases, ts.Cases)
     for _, tcase := range ts.Cases {
         tp.Cases = append(tp.Cases, tcase)
     }
@@ -72,24 +71,18 @@ func (ts *TestSet) ToTestPlan() *TestPlan {
 }
 
 //
-func (ts *TestSet) Normalize() {
+func (ts *TestSet) Initialize() {
 
-    ts.Setup.Init()
-    if !ts.Setup.IsManual() && !ts.Setup.IsExecutable() {
-        ts.Setup = nil
-    } else {
-        ts.Setup.Result = "NotTested"
+    // Create empty actions for setup & cleanup, when empty
+    if ts.Setup == nil {
+        ts.Setup = CreateEmptyAction()
     }
-
-    ts.Cleanup.Init()
-    if !ts.Cleanup.IsManual() && !ts.Cleanup.IsExecutable() {
-        ts.Cleanup = nil
-    } else {
-        ts.Cleanup.Result = "NotTested"
+    if ts.Cleanup == nil {
+        ts.Cleanup = CreateEmptyAction()
     }
 
     for _, tcase := range ts.Cases {
-        tcase.Normalize()
+        tcase.Initialize()
     }
 }
 

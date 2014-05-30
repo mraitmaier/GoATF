@@ -7,8 +7,9 @@
  * to be saved directly into database (regardless of its form - HTML, XML...)
  *
  * History:
- *  0.1   jun11 MR Initial version, limited testing
- *  0.2   oct11 MR HTML report generation added
+ *  1   jun11 MR Initial version, limited testing
+ *  2   oct11 MR HTML report generation added
+ *  3   may14 MR improved and cleaned version
  */
 
 package atf
@@ -32,18 +33,13 @@ type TestReport struct {
 	Finished string
 }
 
-/*
- * TestReport.String - string representation of the TestReport
- */
+// Return s string representation of the TestReport
 func (tr *TestReport) String() string {
 	return fmt.Sprintf("TestReport: %s\nstarted: %s\nfinished: %s\n",
 		tr.TestSet.String(), tr.Started, tr.Finished)
 }
 
-/*
- * TestReport.Name - returns a name of the TestReport (which is actually the
- *                   name of the TestSet). 
- */
+// Returns a name of the TestReport (which is actually the name of the TestSet).
 func (tr *TestReport) Name() string { return tr.TestSet.Name }
 
 // Create an XML-encoded representation of the TestReport. 
@@ -56,9 +52,7 @@ func (tr *TestReport) Xml() (x string, err error) {
 	return string(b[:]), nil
 }
 
-/**************************************************************************
- * TestReport.Json - create JSON representation of the TestReport
- */
+// Create JSON representation of the TestReport.
 func (tr *TestReport) Json() (string, error) {
 	if tr.TestSet != nil {
 		b, err := json.Marshal(tr)
@@ -70,10 +64,7 @@ func (tr *TestReport) Json() (string, error) {
 	return "", nil
 }
 
-/*************************************************************************
- * TestReport.Html - HTML representation of the TestReport.
- * Uses HTML5 standard.
- */
+// Create a HTML representation of the TestReport. Uses HTML5 standard.
 func (tr *TestReport) Html() (string, error) {
 	var html = ""
 	if tr.TestSet != nil {
@@ -85,9 +76,7 @@ func (tr *TestReport) Html() (string, error) {
 	return html, nil
 }
 
-/*
- * TestReport.addHeader2Html - add a <header> section to HTML report
- */
+// Add a <header> section to HTML report
 func (tr *TestReport) addHeader2Html() string {
 	html := fmt.Sprintln("<header>")
 	html += fmt.Sprintf("<h1>Test Report: %s</h1>\n", tr.TestSet.Name)
@@ -119,9 +108,7 @@ func (tr *TestReport) addHeader2Html() string {
 	return html
 }
 
-/*
- * TestReport.addSut2Html - add a system under test data to HTML report
- */
+// Add a system under test data to HTML report.
 func (tr *TestReport) addSut2Html(sut *SysUnderTest) string {
 	html := fmt.Sprintln("<table>")
 	html += fmt.Sprintf("<tr><th>System Under Test</th><th>%s</th></tr>\n",
@@ -136,9 +123,7 @@ func (tr *TestReport) addSut2Html(sut *SysUnderTest) string {
 	return html
 }
 
-/*
- * TestReport.addTestCase2Html - add a test case data to HTML report
- */
+// Add a test case data to HTML report.
 func (tr *TestReport) addTestCase2Html(tc *TestCase) string {
 	html := "<article>\n"
 	html += fmt.Sprintf("<h3>Test Case: %s</h3>", tc.Name)
@@ -166,9 +151,7 @@ func (tr *TestReport) addTestCase2Html(tc *TestCase) string {
 	return html
 }
 
-/*
- * TestReport.addStep2Html - add a test step data to HTML report
- */
+// Add a test step data to HTML report.
 func (tr *TestReport) addStep2Html(step *TestStep) string {
 	// let's see if step has passed and set the HTML class accordingly
     //fmt.Printf("DEBUG step: %s\n", step.String()) // DEBUG
@@ -180,12 +163,10 @@ func (tr *TestReport) addStep2Html(step *TestStep) string {
 	return html
 }
 
-/*
- * resolveHtmlClass - takes a structure and determines which CSS class should
- * be used in HTML report. Only 'Action' (for setup and cleanup actions) and 
- * 'TestStep' types are evaluated. The CSS classes are used to define
- * background color according to status of the Action/TestStep: red, green etc.
- */
+// Takes a structure and determines which CSS class should be used in HTML 
+// report. Only 'Action' (for setup and cleanup actions) and 'TestStep' types 
+// are evaluated. The CSS classes are used to define background color according
+// to status of the Action/TestStep: red, green etc.
 func resolveHtmlClass(structure interface{}) (cls string) {
 	cls = ""
 	switch t := structure.(type) {
@@ -213,9 +194,7 @@ func resolveHtmlClass(structure interface{}) (cls string) {
 	return cls
 }
 
-/*
- * CreateTestReport - function that creates the TestSet struct
- */
+// Creates a new TestSet instance.
 func CreateTestReport(ts *TestSet) *TestReport {
 	return &TestReport{ts, "", ""}
 }

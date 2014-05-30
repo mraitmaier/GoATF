@@ -76,27 +76,23 @@ func (tc *TestCase) String() string {
 	return s
 }
 
-//
-func (tc *TestCase) Normalize() {
+// Initialize the TestCase. This method is defined as a convenience.
+// It is advisable to run it when TestCase instance is not defined using the
+// "CreateTestCase()" method. For instance, when test cases are serialized
+// (collected) from XML or JSON config file. 
+func (tc *TestCase) Initialize() {
 
-    tc.Setup.Init()
-    if !tc.Setup.IsManual() && !tc.Setup.IsExecutable() {
-        tc.Setup = nil
-    } else {
-        tc.Setup.Result = "NotTested"
+    // if setup and cleanup actions are empty....
+    if tc.Setup == nil {
+        tc.Setup = CreateEmptyAction()
     }
-
-    //
-    tc.Cleanup.Init()
-    if !tc.Cleanup.IsManual() && !tc.Cleanup.IsExecutable() {
-        tc.Cleanup = nil
-    } else {
-        tc.Cleanup.Result = "NotTested"
+    if tc.Cleanup == nil {
+        tc.Cleanup = CreateEmptyAction()
     }
 
     //
     for _, step := range tc.Steps {
-        step.Normalize()
+        step.Initialize()
     }
 }
 
