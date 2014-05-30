@@ -189,12 +189,17 @@ func (tr *TestReport) addStep2Html(step *TestStep) string {
 func resolveHtmlClass(structure interface{}) (cls string) {
 	cls = ""
 	switch t := structure.(type) {
+
 	case *Action:
-		if t.Result == "Pass" {
+		switch t.Result {
+		case "Pass":
 			cls = "passed"
-		} else {
+		case "Fail":
 			cls = "failed"
+		case "NotTested":
+			cls = "nottested"
 		}
+
 	case *TestStep:
 		switch t.Status {
 		case "Pass":

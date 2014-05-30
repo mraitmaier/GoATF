@@ -68,6 +68,7 @@ func (ts *TestStep) Display() string {
 	return txt
 }
 
+// Returns an XML-encoded represenation of the TestStep instance.
 func (ts *TestStep) Xml() (string, error) {
 
     output, err := xml.MarshalIndent(ts, "", "  ")
@@ -78,9 +79,7 @@ func (ts *TestStep) Xml() (string, error) {
     return string(output), nil
 }
 
-/*
- * TestStep.Json
- */
+// Returns a JSON-encoded represenation of the TestStep instance.
 func (ts *TestStep) Json() (string, error) {
 	b, err := json.Marshal(ts)
 	if err != nil {
@@ -89,9 +88,7 @@ func (ts *TestStep) Json() (string, error) {
 	return string(b[:]), err
 }
 
-/*
- * TestStep.Html
- */
+// Returns a HTML-encoded represenation of the TestStep instance.
 func (ts *TestStep) Html() (string, error) {
 	// TODO
 	return "", nil
@@ -99,7 +96,7 @@ func (ts *TestStep) Html() (string, error) {
 
 //  Tidy up action: check flags; if both flags are false, just clear the action.
 func (ts *TestStep) Normalize() {
-    ts.Action.UpdateFlags()
+    ts.Action.Init()
     if !ts.Action.IsManual() && !ts.Action.IsExecutable() {
         ts.Action = nil
     } else {
@@ -123,7 +120,7 @@ func (ts *TestStep) Execute(display *ExecDisplayFnCback) {
 	disp("info", fmt.Sprintf(">>> Entering test step %q\n", ts.Name))
 
 	// we execute the action when it's not empty
-	if ts.Action != nil {
+	if ts.Action != nil && ts.Action.IsExecutable() {
 	    disp("notice", fmt.Sprintf("Executing test step action: %q\n",
                 ts.Action.String()))
 		disp("info", FmtOutput(ts.Action.Execute()))

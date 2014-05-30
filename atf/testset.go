@@ -74,14 +74,14 @@ func (ts *TestSet) ToTestPlan() *TestPlan {
 //
 func (ts *TestSet) Normalize() {
 
-    ts.Setup.UpdateFlags()
+    ts.Setup.Init()
     if !ts.Setup.IsManual() && !ts.Setup.IsExecutable() {
         ts.Setup = nil
     } else {
         ts.Setup.Result = "NotTested"
     }
 
-    ts.Cleanup.UpdateFlags()
+    ts.Cleanup.Init()
     if !ts.Cleanup.IsManual() && !ts.Cleanup.IsExecutable() {
         ts.Cleanup = nil
     } else {
@@ -172,7 +172,7 @@ func (ts *TestSet) Execute(display *ExecDisplayFnCback) {
 
 	// execute the cleanup action
 	disp("notice", fmt.Sprintf(">>> Entering Test Set %q\n", ts.Name))
-	if ts.Setup != nil {
+	if ts.Setup != nil && ts.Setup.IsExecutable() {
 		disp("notice", fmt.Sprintf("Executing setup script: %q\n",
                 ts.Setup.String()))
 		output = ts.Setup.Execute()
@@ -193,7 +193,7 @@ func (ts *TestSet) Execute(display *ExecDisplayFnCback) {
 	}
 
 	// execute the cleanup action
-	if ts.Cleanup != nil {
+	if ts.Cleanup != nil && ts.Cleanup.IsExecutable() {
 		disp("notice", fmt.Sprintf("Executing cleanup script: %q\n",
                 ts.Cleanup.String()))
 		disp("info", FmtOutput(ts.Cleanup.Execute()))

@@ -79,7 +79,7 @@ func (tc *TestCase) String() string {
 //
 func (tc *TestCase) Normalize() {
 
-    tc.Setup.UpdateFlags()
+    tc.Setup.Init()
     if !tc.Setup.IsManual() && !tc.Setup.IsExecutable() {
         tc.Setup = nil
     } else {
@@ -87,7 +87,7 @@ func (tc *TestCase) Normalize() {
     }
 
     //
-    tc.Cleanup.UpdateFlags()
+    tc.Cleanup.Init()
     if !tc.Cleanup.IsManual() && !tc.Cleanup.IsExecutable() {
         tc.Cleanup = nil
     } else {
@@ -154,7 +154,7 @@ func (tc *TestCase) Execute(display *ExecDisplayFnCback) {
 	disp("notice", fmt.Sprintf(">>> Entering TestCase %q\n", tc.Name))
 
 	// let's execute setup action (if not empty)
-	if tc.Setup != nil {
+	if tc.Setup != nil && tc.Setup.IsExecutable() {
 		disp("notice", fmt.Sprintf("Executing case setup action: %q\n",
                 tc.Setup.String()))
 		disp("info", FmtOutput(tc.Setup.Execute()))
@@ -174,7 +174,7 @@ func (tc *TestCase) Execute(display *ExecDisplayFnCback) {
 	}
 
 	// let's execute cleanup action (if not empty)
-	if tc.Cleanup != nil {
+	if tc.Cleanup != nil && tc.Cleanup.IsExecutable() {
 		disp("notice", fmt.Sprintf("Executing case cleanup action: %q\n",
                 tc.Cleanup.String()))
         if tc.Setup != nil {
