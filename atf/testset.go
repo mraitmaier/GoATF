@@ -51,7 +51,7 @@ type TestSet struct {
 	Cleanup *Action     `xml:"Cleanup"`
 
 	// a list of test cases; in XML, this is a list of <TestCase> tags
-	Cases []TestCase    `xml:"Cases>TestCase"`
+	Cases []*TestCase    `xml:"Cases>TestCase"`
 }
 
 // Converts a TestSet instance into TestPlan instance. 
@@ -64,7 +64,10 @@ func (ts *TestSet) ToTestPlan() *TestPlan {
     tp.Description = utils.CopyS(ts.Description)
     *tp.Setup = *ts.Setup
     *tp.Cleanup = *ts.Cleanup
-    copy(tp.Cases, ts.Cases)
+    //copy(tp.Cases, ts.Cases)
+    for _, tcase := range ts.Cases {
+        tp.Cases = append(tp.Cases, tcase)
+    }
     return tp
 }
 
@@ -95,7 +98,9 @@ func (ts *TestSet) String() string {
 	s := fmt.Sprintf("TestSet: %q", ts.Name)
 	s += fmt.Sprintf(" is owned by %q test plan.\n", ts.TestPlan)
 	s += fmt.Sprintf("  Description:\n%q\n", ts.Description)
-    s += fmt.Sprintf("  SUT:\n%s\n\n", ts.Sut.String())
+    if ts.Sut != nil {
+        s += fmt.Sprintf("  SUT:\n%s\n\n", ts.Sut.String())
+    }
 	if ts.Setup != nil {
 		s += fmt.Sprintf("  Setup: %s", ts.Setup.String())
 	} else {
@@ -139,7 +144,7 @@ func (ts *TestSet) Html() (string, error) {
 
 
 // Append one or more test cases to the list of cases.
-func (ts *TestSet) Append(set ...TestCase) {
+func (ts *TestSet) Append(set ...*TestCase) {
     ts.Cases = append(ts.Cases, set...)
 }
 
@@ -201,6 +206,6 @@ func (ts *TestSet) Execute(display *ExecDisplayFnCback) {
 // Create a new instance of the TestSet type.
 func CreateTestSet(name, descr string, sut *SysUnderTest,
 	                                   setup, cleanup *Action) *TestSet {
-	tcs := make([]TestCase, 0)
+	tcs := make([]*TestCase, 0)
 	return &TestSet{name, descr, "", sut, setup, cleanup, tcs}
 }

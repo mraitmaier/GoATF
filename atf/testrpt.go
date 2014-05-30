@@ -19,9 +19,7 @@ import (
 	"fmt"
 )
 
-/*
- * TestReport - this is 
- */
+// Represents the test report (test set that has been executed).
 type TestReport struct {
 
     // TestSet sctructure that will be executed
@@ -81,7 +79,7 @@ func (tr *TestReport) Html() (string, error) {
 	if tr.TestSet != nil {
 		html += tr.addHeader2Html()
 		for _, tc := range tr.TestSet.Cases {
-			html += tr.addTestCase2Html(&tc)
+			html += tr.addTestCase2Html(tc)
 		}
 	}
 	return html, nil
@@ -148,17 +146,21 @@ func (tr *TestReport) addTestCase2Html(tc *TestCase) string {
 	html += fmt.Sprintf("<tr><th class=%q>Name</th><th>Action</th>", "name")
 	html += fmt.Sprintf("<th class=%q>Expected Status</th>", "status")
 	html += fmt.Sprintf("<th class=%q>Status</th></tr>\n", "status")
-	html += fmt.Sprintf("<tr><td>Setup</td><td>%s</td><td>Pass</td>",
+    if tc.Setup != nil {
+	    html += fmt.Sprintf("<tr><td>Setup</td><td>%s</td><td>Pass</td>",
 		tc.Setup.String())
-	html += fmt.Sprintf("<td class=%q>%s</td></tr>\n",
-		resolveHtmlClass(tc.Setup), tc.Setup.Result)
+	    html += fmt.Sprintf("<td class=%q>%s</td></tr>\n",
+		        resolveHtmlClass(tc.Setup), tc.Setup.Result)
+    }
 	for _, step := range tc.Steps {
-		html += tr.addStep2Html(&step)
+		html += tr.addStep2Html(step)
 	}
-	html += fmt.Sprintf("<tr><td>Cleanup</td><td>%s</td><td>Pass</td>",
-		tc.Cleanup.String())
-	html += fmt.Sprintf("<td class=%q>%s</td></tr>\n",
-		resolveHtmlClass(tc.Cleanup), tc.Cleanup.Result)
+    if tc.Cleanup != nil {
+	    html += fmt.Sprintf("<tr><td>Cleanup</td><td>%s</td><td>Pass</td>",
+		        tc.Cleanup.String())
+	    html += fmt.Sprintf("<td class=%q>%s</td></tr>\n",
+		        resolveHtmlClass(tc.Cleanup), tc.Cleanup.Result)
+    }
 	html += fmt.Sprintln("</table><p />")
 	html += "</article>\n"
 	return html

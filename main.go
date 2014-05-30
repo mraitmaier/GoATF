@@ -34,7 +34,7 @@ func parseArgs(r *Runner) {
  * main -
  */
 func main() {
-	//    atf.RunBats() // for testing purposes : test/bats.go
+//	    atf.RunBats() // for testing purposes : test/bats.go
 	r := NewRunner()
 	// parse CLI arguments
 	parseArgs(r)

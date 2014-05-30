@@ -24,7 +24,7 @@ type TestPlan struct {
 	Description string      `xml:"Description"`
 	Setup       *Action     `xml:"Setup"`
 	Cleanup     *Action     `xml:"Cleanup"`
-	Cases       []TestCase  `xml:"Cases>TestCase"`
+	Cases       []*TestCase  `xml:"Cases>TestCase"`
 }
 
 //  Returns a plan text representation of the TestPlan instance.
@@ -54,7 +54,7 @@ func (tp *TestPlan) Json() (string, error) {
 }
 
 // Append one or more test cases to the list of test cases.
-func (tp *TestPlan) Append (cases ...TestCase)  {
+func (tp *TestPlan) Append (cases ...*TestCase)  {
     tp.Cases = append(tp.Cases, cases...)
 }
 
@@ -69,7 +69,10 @@ func (tp *TestPlan) ToTestSet() *TestSet {
     *ts.Setup = *tp.Setup
     *ts.Cleanup = *tp.Cleanup
     ts.Sut = new(SysUnderTest) // return empty instance
-    copy(ts.Cases, tp.Cases)
+    //copy(ts.Cases, tp.Cases)
+    for _, tcase := range tp.Cases {
+        ts.Cases = append(ts.Cases, tcase)
+    }
 
     return ts
 }
@@ -77,7 +80,7 @@ func (tp *TestPlan) ToTestSet() *TestSet {
 // Creates a new TestPlan instance.
 func CreateTestPlan(name, descr string,
 	                setup, cleanup *Action) *TestPlan {
-	tcs := make([]TestCase, 0)
+	tcs := make([]*TestCase, 0)
 	return &TestPlan{name, descr, setup, cleanup, tcs}
 }
 

@@ -31,7 +31,7 @@
         </Setup>
 
         <Steps>
-        <TestStep name="step1" expected="XFail">
+        <TestStep name="step1" expected="Pass">
             <Action>
                 <Script>d:/test/test.py</Script> <Args>arg1</Args>
             </Action>
@@ -100,7 +100,7 @@
             <Description />
         </TestStep>
 
-        <TestStep step="step9" expected="Pass">
+        <TestStep name="step9" expected="Pass">
             <Action>
                 <Script>d:/test/test.py</Script><Args>arg1</Args>
             </Action>

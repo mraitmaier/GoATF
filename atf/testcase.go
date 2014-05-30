@@ -45,7 +45,7 @@ type TestCase struct {
 	Status TestResult   `xml:"status,attr"`
 
 	// a list of test steps; in XML, this is a sequence of <TestStep> tags
-	Steps []TestStep    `xml:"Steps>TestStep"`
+	Steps []*TestStep    `xml:"Steps>TestStep"`
 
 	// a detailed description of the test case
 	Description string
@@ -126,7 +126,7 @@ func (tc *TestCase) Html() (string, error) {
 }
 
 // Append one or more test steps to a list of steps.
-func (tc *TestCase) Append(steps ...TestStep) {
+func (tc *TestCase) Append(steps ...*TestStep) {
     tc.Steps = append(tc.Steps, steps...)
 }
 
@@ -177,7 +177,9 @@ func (tc *TestCase) Execute(display *ExecDisplayFnCback) {
 	if tc.Cleanup != nil {
 		disp("notice", fmt.Sprintf("Executing case cleanup action: %q\n",
                 tc.Cleanup.String()))
-		disp("info", FmtOutput(tc.Setup.Execute()))
+        if tc.Setup != nil {
+		    disp("info", FmtOutput(tc.Setup.Execute()))
+        }
 	} else {
 		disp("notice", fmt.Sprintln("Cleanup action is not defined.\n"))
 	}
@@ -221,11 +223,16 @@ func (tc *TestCase) evaluate() {
 // Evaluate the test case status when expected status is XFail.
 func (tc *TestCase) evaluateExpectedFail() {
 
+    // evaluate setup and cleanup actions  
 	// if setup or cleanup have passed, the complete test case fails 
-	if tc.Setup.Result == "Pass" || tc.Cleanup.Result == "Pass" {
+    if tc.Setup != nil && tc.Setup.Result == "Pass" {
 	    tc.Status = "Fail"
 	    return
-	}
+    }
+    if tc.Cleanup != nil && tc.Cleanup.Result == "Pass" {
+	    tc.Status = "Fail"
+	    return
+    }
 
     // If any of the steps passes, the whole test case fails.
     not_tested := 0 // we count the NotTested occurences
@@ -251,8 +258,12 @@ func (tc *TestCase) evaluateExpectedFail() {
 // Evaluate the test case status when expected status is Pass.
 func (tc *TestCase) evaluateExpectedPass() {
 
-    // if setup or cleanup have not passed, the complete test case fails 
-    if tc.Setup.Result == "Fail" || tc.Cleanup.Result == "Fail" {
+    // evaluate setup and cleanup actions  
+    if tc.Setup != nil && tc.Setup.Result == "Fail" {
+	    tc.Status = "Fail"
+	    return
+    }
+    if tc.Cleanup != nil && tc.Cleanup.Result == "Fail" {
 	    tc.Status = "Fail"
 	    return
     }
@@ -279,6 +290,6 @@ func (tc *TestCase) evaluateExpectedPass() {
 // Create a new instance of TestCase.
 func CreateTestCase(name, descr string, setup, cleanup *Action,
 	                expected, status TestResult) *TestCase {
-	steps := make([]TestStep, 0)
+	steps := make([]*TestStep, 0)
 	return &TestCase{name, setup, cleanup, expected, status, steps, descr}
 }

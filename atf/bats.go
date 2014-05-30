@@ -3,9 +3,11 @@
  */
 package atf
 
-import ( "fmt"
-         "os"
-         "path"
+import (
+    "fmt"
+    "os"
+    "path"
+    "bitbucket.org/miranr/goatf/atf/utils"
 )
 
 func RunBats() {
@@ -18,32 +20,32 @@ func RunBats() {
 }
 
 func testTime() {
-    n := Now()
+    n := utils.Now()
     fmt.Printf("time: %s\n", n)
-    fmt.Printf("file version of time: %s\n", FileConv(n))
-    n = NowFile()
+    fmt.Printf("file version of time: %s\n", utils.FileConv(n))
+    n = utils.NowFile()
     fmt.Printf("another file version of time: %s\n", n)
 }
 
 func testCollector() {
     fmt.Println("#### collector test ####")
-    testfile := "cfg/example_ts.xml"
+    testfile := "cfg/example.xml"
     fmt.Println("Base: ", path.Base(testfile) )
     fmt.Println("Ext: ", path.Ext(testfile))
     fmt.Println("Clean path: ", path.Clean(testfile))
     fmt.Println("Is absolute path: ", path.IsAbs(testfile))
     fmt.Println(">>>>>>>> JSON >>>")
     var ts *TestSet
-    var err os.Error
-    ts = CollectTestSet("cfg/example.json")
+    var err error
+    ts = Collect("cfg/example.json")
     if ts == nil { fmt.Println("Empty Test set!") }
     fmt.Println(ts.String())
     fmt.Println(">>>>>>>> ReadLines() test >>>")
-    lines, err := ReadLines(testfile)
+    lines, err := utils.ReadLines(testfile)
     if err != nil { panic(err) }
     for _, val := range lines { fmt.Println(val) }
     fmt.Println(">>>>>>>> ReadTextFile() test >>>")
-    data, err := ReadTextFile(testfile)
+    data, err := utils.ReadTextFile(testfile)
     if err != nil { panic(err) }
     fmt.Printf("$%s$\n", data)
 }
@@ -123,16 +125,16 @@ func testStructure() {
     blah, _ := act0.Json()
     fmt.Println(blah)
     fmt.Println("#### test structure test ####")
-    step1 := CreateTestStep("step1", step_descr, Pass, Fail, act1)
-    step2 := CreateTestStep("step2", step_descr, Pass, Fail, act2)
-    step3 := CreateTestStep("step3", step_descr, Pass, Fail, act3)
-    step4 := CreateTestStep("step4", step_descr, Pass, Fail, act4)
-    step5 := CreateTestStep("step5", step_descr, Pass, Fail, act5)
-    step6 := CreateTestStep("step6", step_descr, Pass, Fail, act6)
-    step7 := CreateTestStep("step7", step_descr, Pass, Fail, act7)
-    step8 := CreateTestStep("step8", step_descr, Pass, Fail, act8)
-    step9 := CreateTestStep("step9", step_descr, Pass, Fail, act9)
-    step0 := CreateTestStep("step0", step_descr, Pass, NotTested, act0)
+    step1 := CreateTestStep("step1", step_descr, "Pass", "Fail", act1)
+    step2 := CreateTestStep("step2", step_descr, "Pass", "Fail", act2)
+    step3 := CreateTestStep("step3", step_descr, "Pass", "Fail", act3)
+    step4 := CreateTestStep("step4", step_descr, "Pass", "Fail", act4)
+    step5 := CreateTestStep("step5", step_descr, "Pass", "Fail", act5)
+    step6 := CreateTestStep("step6", step_descr, "Pass", "Fail", act6)
+    step7 := CreateTestStep("step7", step_descr, "Pass", "Fail", act7)
+    step8 := CreateTestStep("step8", step_descr, "Pass", "Fail", act8)
+    step9 := CreateTestStep("step9", step_descr, "Pass", "Fail", act9)
+    step0 := CreateTestStep("step0", step_descr, "Pass", "NotTested", act0)
     fmt.Println(">> displaying steps' data")
     fmt.Println(step1.String())
     fmt.Println(step1.Xml())
@@ -173,50 +175,50 @@ func testStructure() {
     cleanup1 := act0
     cleanup2 := act9
     fmt.Println(">> test cases...")
-    tcase1 := CreateTestCase("testcase1", setup1, cleanup1, 
-            NotTested, NotTested, case_descr)
-    tcase1.AppendStep(step1)
-    tcase1.AppendStep(step2)
-    tcase1.AppendStep(step3)
+    tcase1 := CreateTestCase("testcase1",  case_descr, setup1, cleanup1,
+            "NotTested", "NotTested")
+    tcase1.Append(step1)
+    tcase1.Append(step2)
+    tcase1.Append(step3)
     fmt.Println(tcase1.String())
     fmt.Println(tcase1.Xml())
     fmt.Println(tcase1.Json())
-    tcase2 := CreateTestCase("testcase2", setup2, cleanup2, 
-            Pass, NotTested, case_descr)
-    tcase2.AppendStep(step4)
-    tcase2.AppendStep(step5)
-    tcase2.AppendStep(step6)
-    tcase2.AppendStep(step7)
-    tcase2.AppendStep(step8)
-    tcase2.AppendStep(step9)
+    tcase2 := CreateTestCase("testcase2", case_descr, setup2, cleanup2, 
+            "Pass", "NotTested")
+    tcase2.Append(step4)
+    tcase2.Append(step5)
+    tcase2.Append(step6)
+    tcase2.Append(step7)
+    tcase2.Append(step8)
+    tcase2.Append(step9)
     fmt.Println(tcase2.String())
     fmt.Println(tcase2.Xml())
     fmt.Println(tcase2.Json())
-    tcase3 := CreateTestCase("testcase3", empty_setup, cleanup1, 
-            XFail, NotTested, case_descr)
-    tcase3.AppendStep(step0)
+    tcase3 := CreateTestCase("testcase3", case_descr, empty_setup, 
+    cleanup1, "XFail", "NotTested")
+    tcase3.Append(step0)
     fmt.Println(tcase3.String())
     fmt.Println(tcase3.Xml())
     fmt.Println(tcase3.Json())
-    tcase4 := CreateTestCase("testcase4", setup1, empty_cleanup, 
-            Pass, Skipped, case_descr)
-    tcase4.AppendStep(step9)
-    tcase4.AppendStep(step8)
-    tcase4.AppendStep(step7)
+    tcase4 := CreateTestCase("testcase4", case_descr, setup1, 
+    empty_cleanup, "Pass", "NotTested")
+    tcase4.Append(step9)
+    tcase4.Append(step8)
+    tcase4.Append(step7)
     fmt.Println(tcase4.String())
     fmt.Println(tcase4.Xml())
     fmt.Println(tcase4.Json())
-    tcase5 := CreateTestCase("testcase5", empty_setup, empty_cleanup, 
-            XFail, NotTested, case_descr)
-    tcase5.AppendStep(step6)
-    tcase5.AppendStep(step5)
-    tcase5.AppendStep(step4)
-    tcase5.AppendStep(step3)
+    tcase5 := CreateTestCase("testcase5", case_descr, empty_setup, 
+    empty_cleanup, "XFail", "NotTested")
+    tcase5.Append(step6)
+    tcase5.Append(step5)
+    tcase5.Append(step4)
+    tcase5.Append(step3)
     fmt.Println(tcase5.String())
     fmt.Println(tcase5.Xml())
     fmt.Println(tcase5.Json())
     fmt.Println(">> SUTs...")
-    sut1 := CreateSUT("SUT1", Hardware, "1.0.0", 
+    sut1 := CreateSUT("SUT1", "Hardware", "1.0.0", 
             "This is description.", "10.0.2.1")
 //    sut2 := CreateSUT("SUT2", Software, "blah", 
 //            "This is another description.", "")
@@ -225,11 +227,11 @@ func testStructure() {
     // TestSet
     fmt.Println(">> testset...")
     ts := CreateTestSet("testset", set_descr, sut1, setup1, cleanup2)
-    ts.AppendCase(tcase1)
-    ts.AppendCase(tcase2)
-    ts.AppendCase(tcase3)
-    ts.AppendCase(tcase4)
-    ts.AppendCase(tcase5)
+    ts.Append(tcase1)
+    ts.Append(tcase2)
+    ts.Append(tcase3)
+    ts.Append(tcase4)
+    ts.Append(tcase5)
     fmt.Println(ts.String())
     fmt.Println(ts.Xml())
     json, _ := ts.Json()
