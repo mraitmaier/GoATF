@@ -47,7 +47,7 @@ func main() {
 		fmt.Println("Exiting...")
 		os.Exit(1)
 	}
-	r.display(true) // DEBUG
+//	r.display(true) // DEBUG
 	// now, run the damn thing....
 	r.Run()
 	//
